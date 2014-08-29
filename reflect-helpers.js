@@ -52,7 +52,7 @@ var getNaiveFunctionSourceCode = Function.call.bind(Function.toString);
 
 _R.isValidVariableName = function isValidVariableName(name) {
     try {
-        indirectEval('var '+name+';');
+        Function(name, '');
     }
     catch (e) {
         return false;
