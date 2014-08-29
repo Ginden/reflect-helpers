@@ -41,7 +41,7 @@ var getNaiveFunctionSourceCode = Function.call.bind(Function.toString);
  };
  
  _R.__directive = '';
-
+ _R.$setDirective(_R.DIRECTIVE_STRICT);
 /**
  * Tests variable name against current implementation rules.
  * " If you were to summarize all these rules in a single ASCII-only regular expression for JavaScript, it would be 11,236 characters long."
@@ -50,8 +50,6 @@ var getNaiveFunctionSourceCode = Function.call.bind(Function.toString);
  * @returns {boolean}
  */
 
-
- 
 _R.isValidVariableName = function isValidVariableName(name) {
     try {
         indirectEval('var '+name+';');
