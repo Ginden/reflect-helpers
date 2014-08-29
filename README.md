@@ -57,6 +57,10 @@ Returns `[[Class]]`'s name of what.
 _R.declosureFunction(func[, transformer]);
 ```
 Returns `func` redefined in global context. `transformer` function is called on source code of `func` before evaluation of code.
+##### transformer
+`function transformer(sourceCode, originalFunction) {
+    return transformedSourceCode;
+}`
 
 #### createNamedFunction
 
