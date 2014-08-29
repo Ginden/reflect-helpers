@@ -23,35 +23,49 @@ _R.DIRECTIVE_ASM    // 'use asm'; is placed before every new function
 
 ### Checks and tests
 
+#### isValidVariableName
 ```
 _R.isValidVariableName(name)
 ```
 Checks if supplied `name` is valid variable identifier.
+
+#### isBoundOrNativeFunction
 
 ```
 _R.isBoundOrNativeFunction(func)
 ```
 Checks if supplied `func` is bound (`.bind`) or native code.
 
+#### getFunctionSourceCode
+
 ```
 _R.getFunctionSourceCode(func)
 ```
 Returns FunctionExpression or throws error when called on non-function, bound function or native-code function.
+
+#### getInternalClass
+
 
 ```
 _R.getInternalClass(what)
 ```
 Returns `[[Class]]`'s name of what.
 
+#### declosureFunction
+
 ```
 _R.declosureFunction(func[, transformer]);
 ```
 Returns `func` redefined in global context. `transformer` function is called on source code of `func` before evaluation of code.
 
+#### createNamedFunction
+
 ```
 _R.createNamedFunction(name, [...argsNames[, sourceCode]])
 ```
 Works like Function constructor but first argument is the function name (used in recursive calls; shouldn't be confused with function.name).
+
+#### createClosure
 
 ```
 _R.createClosure(func, context, name)
@@ -74,10 +88,14 @@ var showFactorial = _R.createClosure(
 showFactorial(5);
 ```
 
+#### getObjectPrototype
+
 ```
 _R.getObjectPrototype(what)
 ```
 If `what` is an object, returns it's prototype. Otherwise, returns `null`.
+
+# getPrototypesChain
 
 ```
 _R.getPrototypesChain(what)
