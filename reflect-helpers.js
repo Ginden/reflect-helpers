@@ -74,7 +74,6 @@ function NativeFunctionSuppliedError() {
     var ret = Object.create(new Error());
     ret.message = '_R does not support native or bound functions as arguments!';
     ret.name = 'NativeFunctionSuppliedError';
-    
     return ret;
 }
 
@@ -132,7 +131,7 @@ _R.getInternalClass = function (what) {
  * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
  */
 
-_R.declosureFunction = function(func, transform) {
+_R.declosureFunction = function(func, transformer) {
     transformer = transformer || function(a) {return a};
     return indirectEval('('+transformer(_R.getFunctionSourceCode(func), func)+')');
 }
