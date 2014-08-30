@@ -16,7 +16,17 @@ root._R = factory();
 }
 }(this, function () {
 var _R = {};
-var indirectEval = eval;
+var indirectEval;
+(function wow(){
+   (1,eval)('var wow = 3');
+   if (typeof wow === 'number') {
+      indirectEval = function indirectEval(code) {
+         return Function('code', 'return eval(code)')(code)
+      }
+   } else {
+      indirectEval = eval;
+   }
+})();
 var getNaiveFunctionSourceCode = Function.call.bind(Function.toString);
 
  _R.__directives = ['', 'use strict', 'use asm'];
