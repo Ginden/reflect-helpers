@@ -175,16 +175,15 @@ _R.createNamedFunction = function createNamedFunction(name, restArgs) {
 _R.createClosure = function createClosure(func, context, name) {
     context = context || {};
     name = isValidVariableName(name) ? name : 'anonymous';
-    var varsList = [];
-    var argumentsNames;
-    var argumentsValues;
+    var argumentsNames  = [];
+    var argumentsValues = [];
     for (var key in context) {
         if (Object.hasOwnProperty.call(context, key) && _R.isValidVariableName(key)) {
-            argumentsNames.push({name: key, val: context[key]});
+            argumentsNames.push(key);
+            argumentsValues.push(context[key])
         }
     }
-    var argumentsNames  = varsList.map(function(el){return el.name});
-    var argumentsValues = varsList.map(function(el){return el.val});
+
     var sourceCode = _R.__directive+';\n var '+name+ '= ('+_R.getFunctionSourceCode(func)+'); return '+name+';';
     
     return Function.apply(null, argumentsNames.concat(sourceCode)).apply(null, argumentsValues);
