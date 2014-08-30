@@ -27,7 +27,7 @@ _R.DIRECTIVE_ASM    // 'use asm'; is placed before every new function
 ```
 _R.isValidVariableName(name)
 ```
-Checks if supplied `name` is valid variable identifier.
+Checks if supplied `name` is a valid variable identifier in current JS implementation.
 
 #### isBoundOrNativeFunction
 
@@ -41,7 +41,7 @@ Checks if supplied `func` is bound (`.bind`) or native code.
 ```
 _R.getFunctionSourceCode(func)
 ```
-Returns FunctionExpression or throws error when called on non-function, bound function or native-code function.
+Returns `FunctionExpression`. Throws error when called on non-function, bound function or native-code function.
 
 #### getInternalClass
 
@@ -49,16 +49,17 @@ Returns FunctionExpression or throws error when called on non-function, bound fu
 ```
 _R.getInternalClass(what)
 ```
-Returns `[[Class]]`'s name of what.
+Returns `[[Class]]`'s name of `what`.
 
 #### declosureFunction
 
 ```
 _R.declosureFunction(func[, transformer]);
 ```
-Returns `func` redefined in global context. `transformer` function is called on source code of `func` before evaluation of code.
+Returns `func` redefined in global context. `transformer` function is called on source code of `func` before code evaluation.
 ##### transformer
 `function transformer(sourceCode, originalFunction) {
+    /* magic */
     return transformedSourceCode;
 }`
 
@@ -67,7 +68,7 @@ Returns `func` redefined in global context. `transformer` function is called on 
 ```
 _R.createNamedFunction(name, [...argsNames[, sourceCode]])
 ```
-Works like Function constructor but first argument is the function name (used in recursive calls; shouldn't be confused with function.name).
+Works like `Function` constructor but first argument is the function name (used in recursive calls; shouldn't be confused with non-standard property `function.name`).
 
 #### createClosure
 
@@ -98,8 +99,9 @@ showFactorial(5);
 _R.getObjectPrototype(what)
 ```
 If `what` is an object, returns it's prototype. Otherwise, returns `null`.
+Can return invalid object in IE8 and lower.
 
-# getPrototypesChain
+#### getPrototypesChain
 
 ```
 _R.getPrototypesChain(what)
