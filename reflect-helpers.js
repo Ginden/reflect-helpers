@@ -91,10 +91,7 @@ _R.__boundFunction = (function(){}).bind(null);
  */
 
 _R.isBoundOrNativeFunction = function isBoundOrNativeFunction(func) {
-    if (getNaiveFunctionSourceCode(func) === getNaiveFunctionSourceCode(func.bind(null))) {
-        return true;
-    }
-    return false;
+    return getNaiveFunctionSourceCode(func) === getNaiveFunctionSourceCode(func.bind(null));
 };
 
 /**
