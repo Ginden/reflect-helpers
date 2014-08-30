@@ -142,7 +142,7 @@ _R.declosureFunction = function(func, transformer) {
  */
 
 _R.createNamedFunction = function createNamedFunction(name, restArgs) {
-    name = ''+name || 'anonymous';
+    name = name || 'anonymous';
     if (!_R.isValidVariableName(name)) {
         throw new NativeFunctionSuppliedError();
     }
@@ -168,13 +168,13 @@ _R.createNamedFunction = function createNamedFunction(name, restArgs) {
  * @method
  * @param {function} func - function name (exists in function scope, shouldn't be confused with function.name property)
  * @param {Object} [context] - context of new function
- * @param {string} [name] - name of new function (defaults to 'anonymous' (will NOT shadow arguments from context))
+ * @param {string} [name] - name of new function (defaults to 'anonymous' (will shadow arguments from context))
  * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
  */
 
 _R.createClosure = function createClosure(func, context, name) {
     context = context || {};
-    name = isValidVariableName(name) ? name : 'anonymous';
+    name = _R.isValidVariableName(name) ? name : 'anonymous';
     var argumentsNames  = [];
     var argumentsValues = [];
     for (var key in context) {
