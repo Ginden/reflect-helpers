@@ -27,6 +27,18 @@ var indirectEval;
       indirectEval = eval;
    }
 })();
+_R.__supportsObjectDefineProperties = (function(){
+   if (!Object.defineProperty) {
+      return false;
+   }
+   try {
+      Object.defineProperty({}, 'wow', {value: 3});
+      return true;
+   } catch (e) {
+      return false;
+   }
+})();
+
 var getNaiveFunctionSourceCode = Function.call.bind(Function.toString);
 
  _R.__directives = ['', 'use strict', 'use asm'];
@@ -72,14 +84,9 @@ _R.isValidVariableName = function isValidVariableName(name) {
 
 
 
+
 function NativeFunctionSuppliedError() {
-    var ret = Object.create ? Object.create(new Error()) : (function(){
-         function F() {
-            
-         }
-         F.prototype = new Error();
-         return (new F());
-      }());
+    var ret = objectCreate(new Error());
     ret.message = '_R does not support native or bound functions as arguments!';
     ret.name = 'NativeFunctionSuppliedError';
     return ret;
@@ -111,6 +118,8 @@ function removeDuplicatesFromStringArray(what) {
 
 _R.__boundFunction = (function(){}).bind(null);
 
+_R.__emptyFunction = Function();
+_R.__emptySetter = Function('a', '');
 
 /**
  * Tests if function is native or bound
@@ -293,21 +302,78 @@ _R.getObjectPropertiesNames = function getObjectPropertiesNames(what, searchInPr
 
 
 
+
+
+_R.__getDescriptor = function __getDescriptor(what, key) {
+   var descriptor;
+   var whatLookup = what;
+   do {
+      descriptor = Object.getOwnPropertyDescriptor(what);
+      what = _R.getObjectPrototype(what)
+   } while (!descriptor && what);
+   return descriptor;
+};
+
+_R.__injectAccesorsToDescriptor = function __injectAccesorsToDescriptor(descriptor, getter, setter) {
+   descriptor.get = getter;
+   descriptor.set = setter || Function('a, b');
+   return descriptor;
+};
+ 
+_R.__createAccesor = function __createGetter(accesor, original, proxy, key) {
+   return getter.bind(null, original, proxy, key);
+};
+
 /**
- * Returns proxy object.
+ * new _R.Proxy is an alias for _R.createProxy
  * Calls Object.seal on returned value.
- * Available only if current implementation supports Object.defineProperty()
+ * Works only if current implementation supports Object.defineProperty()
  * @method
  * @param {Object} what
  * @param {function} getHandler - function filter(originalObject, proxyObject, propertyName)
  * @param {function} [setHandler] - function filter(originalObject, proxyObject, propertyName, propertyValue). Default: do nothing.
  * @returns {Object} 
  */
-if (!Object.defineProperty) {
-   _R.createProxy = function createProxy(what, getHandler, setHandler) {
-      
-   };
-}
+
+_R.Proxy = function Proxy() {
+   if (_R.__supportsObjectDefineProperties) {
+      throw new Error('_R.createProxy requires spec-compatible Object.defineProperty to work!');
+   }
+   if (typeof getHandler !== 'function') {
+      throw new Error('getHandler is not a function!');
+   }
+   if (arguments.length > 2 && typeof setHandler !== 'function') {
+      throw new Error('setHandler is not a function!');
+   }
+   setHandler = setHandler 
+   var keys = removeDuplicatesFromStringArray(_R.getObjectPropertiesNames(what, true));
+   var key, originalDescriptor, descriptor, accesorGet, accesorSet;
+   for (var i = 0; i < keys.length; i++) {
+      key = key[i];
+      descriptor = _R.__getDescriptor(what, key);
+      accesorGet = _R.__createAccesor(getHandler, what, proxy, key);
+      accesorSet = setHandler ? _R.__createAccesor(setHandler, what, proxy, key) : _R.__emptyFunction;
+      _R.__injectAccesorsToDescriptor(descriptor, accesorGet, accesorSet);
+      Object.defineProperty(this, key, descriptor);
+   }
+   Object.seal(this);
+   return this;
+};
+
+
+/**
+ * Returns proxy object.
+
+ * @method
+ * @param {Object} what
+ * @param {function} getHandler - function filter(originalObject, proxyObject, propertyName)
+ * @param {function} [setHandler] - function filter(originalObject, proxyObject, propertyName, propertyValue). Default: do nothing.
+ * @returns {Object} 
+ */
+ 
+_R.createProxy = function createProxy(what, getHandler, setHandler) {
+   return (new _R.Proxy(what, getHandler, setHandler));
+};
 
 _R.toString = function() {
     return '[Object _R]';
