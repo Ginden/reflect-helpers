@@ -70,6 +70,8 @@ _R.isValidVariableName = function isValidVariableName(name) {
     return true;
 }
 
+
+
 function NativeFunctionSuppliedError() {
     var ret = Object.create ? Object.create(new Error()) : (function(){
          function F() {
@@ -83,7 +85,29 @@ function NativeFunctionSuppliedError() {
     return ret;
 }
 
+function objectCreate(proto) {
+   function F(){}
+   if (Object.create) {
+      return Object.create(proto);
+   }
+   else {
+      F.prototype = proto;
+      return (new F());
+   }
+}
 
+
+function removeDuplicatesFromStringArray(what) {
+   var dict = objectCreate(null);
+   var ret = [];
+   for (var i=0; i < what.length; i++) {
+      dict[what[i]] = true;
+   }
+   for (var key in dict) {
+      ret.push(key);
+   }
+   return ret;
+}
 
 _R.__boundFunction = (function(){}).bind(null);
 
@@ -240,6 +264,34 @@ _R.getPrototypesChain = function getPrototypesChain(what) {
     } while (what = _R.getObjectPrototype(what) && prototypesList.indexOf(what) !== -1);
     return prototypesList;
 };
+
+/**
+ * Returns objects properties names without duplicates
+ * @param {*} what
+ * @param {boolean} searchInPrototypes
+ * @returns {String*} 
+ */
+
+_R.getObjectPropertiesNames = function getObjectPropertiesNames(what, searchInPrototypes) {
+   var keys = [];
+   if (Object.getOwnPropertyNames) {
+      keys.concat(Object.getOwnPropertyNames(what))
+   }
+   else {
+      for (var key in what) {
+         if (Object.hasOwnProperty.call(what, key)) {
+            keys.push(key);
+         }
+      }
+   }
+   if (searchInPrototypes) {
+      keys.concat(_R.getObjectPropertiesNames(_R.getObjectPrototype(what), true));
+   }
+   
+   return keys;
+}
+
+
 
 /**
  * Returns proxy object.
