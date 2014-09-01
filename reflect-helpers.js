@@ -82,9 +82,6 @@ _R.isValidVariableName = function isValidVariableName(name) {
     return true;
 }
 
-
-
-
 function NativeFunctionSuppliedError() {
     var ret = objectCreate(new Error());
     ret.message = '_R does not support native or bound functions as arguments!';
@@ -102,7 +99,6 @@ function objectCreate(proto) {
       return (new F());
    }
 }
-
 
 function removeDuplicatesFromStringArray(what) {
    var dict = objectCreate(null);
@@ -130,7 +126,9 @@ _R.__emptySetter = Function('a', '');
  */
 
 _R.isBoundOrNativeFunction = function isBoundOrNativeFunction(func) {
-    return getNaiveFunctionSourceCode(func) === getNaiveFunctionSourceCode(func.bind(null));
+    return (getNaiveFunctionSourceCode(func) === getNaiveFunctionSourceCode(func.bind(null)) ||
+            getNaiveFunctionSourceCode(func) === getNaiveFunctionSourceCode(_R.__boundFunction)
+      );
 };
 
 /**
