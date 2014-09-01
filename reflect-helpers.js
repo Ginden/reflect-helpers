@@ -242,16 +242,20 @@ _R.getPrototypesChain = function getPrototypesChain(what) {
 };
 
 /**
- * Returns proxy object existing in prototype chains
+ * Returns proxy object.
+ * Calls Object.seal on returned value.
+ * Available only if current implementation supports Object.defineProperty()
  * @method
- * @param {*} what
- * @returns {Object*} 
+ * @param {Object} what
+ * @param {function} getHandler - function filter(originalObject, proxyObject, propertyName)
+ * @param {function} [setHandler] - function filter(originalObject, proxyObject, propertyName, propertyValue). Default: do nothing.
+ * @returns {Object} 
  */
-
- 
-_R.createProxy = function createProxy(object, getHandler, setHandler) {
-   
-};
+if (!Object.defineProperty) {
+   _R.createProxy = function createProxy(what, getHandler, setHandler) {
+      
+   };
+}
 
 _R.toString = function() {
     return '[Object _R]';
