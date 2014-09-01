@@ -335,7 +335,8 @@ _R.__createAccesor = function __createGetter(accesor, original, proxy, key) {
  * @returns {Object} 
  */
 
-_R.Proxy = function Proxy() {
+_R.Proxy = function Proxy(what, getHandler, setHandler) {
+   var proxy = this instanceof Proxy ? this : objectCreate(Proxy.prototype);
    if (_R.__supportsObjectDefineProperties) {
       throw new Error('_R.createProxy requires spec-compatible Object.defineProperty to work!');
    }
@@ -354,9 +355,9 @@ _R.Proxy = function Proxy() {
       accesorGet = _R.__createAccesor(getHandler, what, proxy, key);
       accesorSet = setHandler ? _R.__createAccesor(setHandler, what, proxy, key) : _R.__emptyFunction;
       _R.__injectAccesorsToDescriptor(descriptor, accesorGet, accesorSet);
-      Object.defineProperty(this, key, descriptor);
+      Object.defineProperty(proxy, key, descriptor);
    }
-   Object.seal(this);
+   Object.seal(proxy);
    return this;
 };
 
