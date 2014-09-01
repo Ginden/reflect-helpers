@@ -71,7 +71,13 @@ _R.isValidVariableName = function isValidVariableName(name) {
 }
 
 function NativeFunctionSuppliedError() {
-    var ret = Object.create(new Error());
+    var ret = Object.create ? Object.create(new Error()) : (function(){
+         function F() {
+            
+         }
+         F.prototype = new Error();
+         return (new F());
+      }());
     ret.message = '_R does not support native or bound functions as arguments!';
     ret.name = 'NativeFunctionSuppliedError';
     return ret;
@@ -233,6 +239,18 @@ _R.getPrototypesChain = function getPrototypesChain(what) {
         prototypesList.push(what);
     } while (what = _R.getObjectPrototype(what) && prototypesList.indexOf(what) !== -1);
     return prototypesList;
+};
+
+/**
+ * Returns proxy object existing in prototype chains
+ * @method
+ * @param {*} what
+ * @returns {Object*} 
+ */
+
+ 
+_R.createProxy = function createProxy(object, getHandler, setHandler) {
+   
 };
 
 _R.toString = function() {
