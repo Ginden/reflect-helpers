@@ -27,6 +27,10 @@ var indirectEval;
       indirectEval = eval;
    }
 })();
+
+
+_R.indirectEval = indirectEval;
+
 _R.__supportsObjectDefineProperties = (function(){
    if (!Object.defineProperty) {
       return false;
@@ -386,6 +390,7 @@ _R.Proxy = function Proxy(what, getHandler, setHandler) {
 _R.createProxy = function createProxy(what, getHandler, setHandler) {
    return (new _R.Proxy(what, getHandler, setHandler));
 };
+
 
 _R.toString = function() {
     return '[Object _R]';
