@@ -112,7 +112,7 @@ function removeDuplicatesFromStringArray(what) {
    return ret;
 }
 
-_R.__boundFunction = (function(){}).bind(null);
+_R.__boundFunction = (function a(){}).bind(null);
 
 _R.__emptyFunction = Function();
 _R.__emptySetter = Function('a', '');
@@ -126,9 +126,22 @@ _R.__emptySetter = Function('a', '');
  */
 
 _R.isBoundOrNativeFunction = function isBoundOrNativeFunction(func) {
-    return (getNaiveFunctionSourceCode(func) === getNaiveFunctionSourceCode(func.bind(null)) ||
-            getNaiveFunctionSourceCode(func) === getNaiveFunctionSourceCode(_R.__boundFunction)
-      );
+   var sourceCode = getNaiveFunctionSourceCode(func);
+   if (sourceCode === getNaiveFunctionSourceCode(func.bind(null))) {
+      return true;
+   }
+   // Old Safari
+   if (sourceCode === '[function]') {
+      return true;
+   }
+   
+   try {
+      Function('return ('+sourceCode+')');
+      return false;
+   } catch (e) {
+      return true;
+   }
+
 };
 
 /**
