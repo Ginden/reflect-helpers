@@ -23,16 +23,18 @@ function expect(expected) {
         end: function(implementationDependant) {
             var message = 'Test. '+(this.name || expect.count);
             if (this.result === false) {
-                message += ' No, it isn\'t'+(implementationDependant ? ' (depends on implementation)' : '')+'!';
+                message += (implementationDependant ?
+                            ' Depends on implementation, but it isn\'t behavior expected by _R.' :
+                            'Ouh, it shouldn\'t work this way!');
                 console.error(message);
                 if (!implementationDependant) {
-                    throw Error([message, this.expected, this.actual]);
+                    throw JSON.stringify({message: message, expected: this.expected, actual: this.actual});
                 }
                 else {
                     expect.log.push([message, this.expected, this.actual, Error()]);
                 }
             } else if (this.result === true) {
-                message += ' Yes, it is.';
+                message += ' Result is correct' + (implementationDependant ? ' (but it is implementation dependant)' : '')+'.';
                 console.log(message);
             } else {
                 throw new Error('Invalid test case');
@@ -44,6 +46,7 @@ function expect(expected) {
 }
 expect.log = [];
 (function(){
+    console.log('\n Testing _R.isValidVariableName \n');
 var varsIdentifiers = [
     ['a', true],
     ['b', true],
@@ -78,5 +81,48 @@ for (var i = 0; i < varsIdentifiers.length; i++) {
 }
 })();
 
+(function(){
+    console.log('\n Testing _R.isBoundOrNativeFunction \n');
+var functions = [
+    [function a() {}, false],
+    [(function b(){}).bind(null), true],
+    [console.log, true, true],
+    [Date, true],
+    [Date.bind(null), true],
+    [setTimeout, true, true],
+    [Date, true],
+    [(function() {/*
+    [native code]
+*/}), false],
+    [(function a() {
+        a.toString = Function.toString.bind(setTimeout);
+        return a;
+        })(), false],
+    [eval, true]
+];
+var prepare;
+try {
+    prepare = [eval('() => global'), false];
+    functions.push(prepare);
+    prepare = [eval('(a) => a'), false];
+    functions.push(prepare)
+    prepare = [eval('(() => global).bind(null)'), true];
+    functions.push(prepare)
+}
+catch (e) {
+    console.log('\nThis implementation does not support arrow functions. Ommiting tests.\n');
+}
+var func, expectedVal, implementationDependant, test;
+for (var i = 0; i < functions.length; i++) {
+    func = functions[i][0];
+    expectedVal = functions[i][1];
+    implementationDependant = !!(functions[i][2]);
+    expect(
+        _R.isBoundOrNativeFunction(func)
+    ).toEqual(
+        expectedVal
+    ).setTestName('Is function ("'+(func.name || i)+'") native or bound?').run().end(implementationDependant);
+}
+})();
 
 
