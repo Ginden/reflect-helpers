@@ -26,7 +26,7 @@ function expect(expected) {
                 message += (implementationDependant ?
                             ' Depends on implementation, but it isn\'t behavior expected by _R.' :
                             'Ouh, it shouldn\'t work this way!');
-                console.error(message);
+                console.warn(message);
                 if (!implementationDependant) {
                     throw JSON.stringify({message: message, expected: this.expected, actual: this.actual});
                 }
@@ -46,7 +46,7 @@ function expect(expected) {
 }
 expect.log = [];
 (function(){
-    console.log('\n Testing _R.isValidVariableName \n');
+    console.log('\n\tTesting _R.isValidVariableName \n');
 var varsIdentifiers = [
     ['a', true],
     ['b', true],
@@ -82,7 +82,7 @@ for (var i = 0; i < varsIdentifiers.length; i++) {
 })();
 
 (function(){
-    console.log('\n Testing _R.isBoundOrNativeFunction \n');
+    console.log('\n\tTesting _R.isBoundOrNativeFunction \n');
 var functions = [
     [function a() {}, false],
     [(function b(){}).bind(null), true],
@@ -110,7 +110,7 @@ try {
     functions.push(prepare)
 }
 catch (e) {
-    console.log('\nThis implementation does not support arrow functions. Ommiting tests.\n');
+    console.log('\n\tThis implementation does not support arrow functions. Ommiting tests.\n');
 }
 var func, expectedVal, implementationDependant, test;
 for (var i = 0; i < functions.length; i++) {
@@ -126,7 +126,7 @@ for (var i = 0; i < functions.length; i++) {
 })();
 
 (function(){
-    console.log('\n Testing _R.getFunctionSourceCode \n');
+    console.log('\n\tTesting _R.getFunctionSourceCode \n');
 var functions = [
     [function a() {}, 'function a() {}'],
 ];
@@ -142,6 +142,41 @@ for (var i = 0; i < functions.length; i++) {
     ).setTestName('Can function ("'+(func.name || i)+'") code be retrieved?').run().end(implementationDependant);
 }
 })();
+
+(function(){
+    console.log('\n\tTesting _R.getInternalClass \n');
+var values = [
+    ['abcd',                'String'],
+    [5,                     'Number'],
+    [null,                  'Null',      true],
+    [undefined,             'Undefined', true],
+    [Function(),            'Function'],
+    [this,                  'global',    true],
+    [{},                    'Object'],
+    [[],                    'Array'],
+    [Infinity,              'Number'],
+    [NaN,                   'Number'],
+    [true,                  'Boolean'],
+    [new String('oh hai'),  'String'],
+];
+if (typeof Symbol !== 'undefined') {
+    values.push([Symbol(), 'Symbol', true]);
+}
+var func, expectedVal, implementationDependant, test;
+for (var i = 0; i < values.length; i++) {
+    func = values[i][0];
+    expectedVal = values[i][1];
+    implementationDependant = !!(values[i][2]);
+    expect(
+        _R.getInternalClass(func)
+    ).toEqual(
+        expectedVal
+    ).setTestName('Is '+func+' [[Class]] equal to '+expectedVal+'?').run().end(implementationDependant);
+}
+})();
+
+
+console.log('\n\n\tTESTS PASSED SUCCESFULLY!\n\n');
 
 
 
