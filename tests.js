@@ -125,4 +125,24 @@ for (var i = 0; i < functions.length; i++) {
 }
 })();
 
+(function(){
+    console.log('\n Testing _R.getFunctionSourceCode \n');
+var functions = [
+    [function a() {}, 'function a() {}'],
+];
+var func, expectedVal, implementationDependant, test;
+for (var i = 0; i < functions.length; i++) {
+    func = functions[i][0];
+    expectedVal = functions[i][1];
+    implementationDependant = !!(functions[i][2]);
+    expect(
+        _R.getFunctionSourceCode(func)
+    ).toEqual(
+        expectedVal
+    ).setTestName('Can function ("'+(func.name || i)+'") code be retrieved?').run().end(implementationDependant);
+}
+})();
+
+
+
 
