@@ -16,17 +16,10 @@ root._R = factory();
 }
 }(this, function () {
 var _R = {};
-var indirectEval;
-(function wow(){
-   (1,eval)('var wow = 3');
-   if (typeof wow === 'number') {
-      indirectEval = function indirectEval(code) {
-         return Function('code', 'return eval(code)')(code)
-      }
-   } else {
-      indirectEval = eval;
-   }
-})();
+var indirectEval = function indirectEval(code, preparationCode) {
+         return Function('code', (arguments.length > 1 ? preparationCode : _R.__directive) + ';\n return eval(arguments[0])')(code)
+};
+
 
 
 _R.indirectEval = indirectEval;
@@ -298,8 +291,11 @@ _R.getPrototypesChain = function getPrototypesChain(what) {
 
 _R.getObjectPropertiesNames = function getObjectPropertiesNames(what, searchInPrototypes) {
    var keys = [];
+   if (what === null) {
+      return [];
+   }
    if (Object.getOwnPropertyNames) {
-      keys.concat(Object.getOwnPropertyNames(what))
+      keys.push.apply(keys, Object.getOwnPropertyNames(what));
    }
    else {
       for (var key in what) {
@@ -309,7 +305,7 @@ _R.getObjectPropertiesNames = function getObjectPropertiesNames(what, searchInPr
       }
    }
    if (searchInPrototypes) {
-      keys.concat(_R.getObjectPropertiesNames(_R.getObjectPrototype(what), true));
+      keys.push.apply(keys, _R.getObjectPropertiesNames(_R.getObjectPrototype(what), true));
    }
    
    return keys;
@@ -321,9 +317,8 @@ _R.getObjectPropertiesNames = function getObjectPropertiesNames(what, searchInPr
 
 _R.__getDescriptor = function __getDescriptor(what, key) {
    var descriptor;
-   var whatLookup = what;
    do {
-      descriptor = Object.getOwnPropertyDescriptor(what);
+      descriptor = Object.getOwnPropertyDescriptor(what, key);
       what = _R.getObjectPrototype(what)
    } while (!descriptor && what);
    return descriptor;
@@ -331,12 +326,14 @@ _R.__getDescriptor = function __getDescriptor(what, key) {
 
 _R.__injectAccesorsToDescriptor = function __injectAccesorsToDescriptor(descriptor, getter, setter) {
    descriptor.get = getter;
-   descriptor.set = setter || Function('a, b');
+   descriptor.set = setter;
+   delete descriptor.value;
+   delete descriptor.writable;
    return descriptor;
 };
  
 _R.__createAccesor = function __createGetter(accesor, original, proxy, key) {
-   return getter.bind(null, original, proxy, key);
+   return accesor.bind(null, original, proxy, key);
 };
 
 /**
@@ -349,10 +346,11 @@ _R.__createAccesor = function __createGetter(accesor, original, proxy, key) {
  * @param {function} [setHandler] - function filter(originalObject, proxyObject, propertyName, propertyValue). Default: do nothing.
  * @returns {Object} 
  */
+ 
 
 _R.Proxy = function Proxy(what, getHandler, setHandler) {
    var proxy = this instanceof Proxy ? this : objectCreate(Proxy.prototype);
-   if (_R.__supportsObjectDefineProperties) {
+   if (!_R.__supportsObjectDefineProperties) {
       throw new Error('_R.createProxy requires spec-compatible Object.defineProperty to work!');
    }
    if (typeof getHandler !== 'function') {
@@ -361,11 +359,12 @@ _R.Proxy = function Proxy(what, getHandler, setHandler) {
    if (arguments.length > 2 && typeof setHandler !== 'function') {
       throw new Error('setHandler is not a function!');
    }
-   setHandler = setHandler 
+   setHandler = setHandler || _R.Proxy.defaultSetter;
    var keys = removeDuplicatesFromStringArray(_R.getObjectPropertiesNames(what, true));
+   console.log(keys);
    var key, originalDescriptor, descriptor, accesorGet, accesorSet;
    for (var i = 0; i < keys.length; i++) {
-      key = key[i];
+      key = keys[i];
       descriptor = _R.__getDescriptor(what, key);
       accesorGet = _R.__createAccesor(getHandler, what, proxy, key);
       accesorSet = setHandler ? _R.__createAccesor(setHandler, what, proxy, key) : _R.__emptyFunction;
@@ -376,9 +375,14 @@ _R.Proxy = function Proxy(what, getHandler, setHandler) {
    return this;
 };
 
+_R.Proxy.defaultSetter = function (orig, proxy, name, val) {
+   return orig[name] = val;
+};
+
 
 /**
  * Returns proxy object.
+ * __R.createProxy is an alias for new _R.Proxy
 
  * @method
  * @param {Object} what
@@ -387,20 +391,122 @@ _R.Proxy = function Proxy(what, getHandler, setHandler) {
  * @returns {Object} 
  */
  
-_R.createProxy = function createProxy(what, getHandler, setHandler) {
-   return (new _R.Proxy(what, getHandler, setHandler));
+_R.createProxy = function createProxy() {
+   return _R.construct(_R.Proxy, arguments);
 };
 
+/**
+ * Applies constructor with specified arguments (array or array-like)
+ * Follows spec of ES6 Reflect.construct
+ * @method
+ * @param {function} target
+ * @param {Array} args 
+ * @returns {Object} 
+ */
+
+_R.construct = function construct(target, args) {
+   if (typeof target !== 'function') {
+      throw new TypeError('_R.construct can be called only on function');
+   }
+   args = Array.prototype.slice.call(args);
+   var argsList = [];
+   for (var i=0; i < args.length; i++) {
+      argsList.push('arguments['+(i+1)+']')
+   }
+   
+   var source = 'return (new Constructor('+argsList.join(', ')+'));';
+   return Function('Constructor', source).apply(null, [target].concat(args));
+}
 
 _R.toString = function() {
     return '[Object _R]';
 };
 
+function Env() {
+   Env.__DECODER__ = '_R';
+}
+
+Env.__serialise = function serialise(what) {
+   var stringRepresentation = {};
+   var type;
+   if (what instanceof _R.Expression) {
+      type = 'expression';
+   } else if (what instanceof RegExp) {
+      type = 'RegExp';
+   } else {
+      type = typeof what;
+   }
+   var ret = {};
+   var val;
+   ret.__TYPE__ = type;
+   if (type === 'object') {
+      val = Env.__serialiseObject(what);
+   } else if (type === 'function') {
+      val = _R.getFunctionSourceCode(what);
+   } else if (type === 'number' || type === 'string') {
+      val = String(what); // JSON.stringify does not preserve Infinity, -Infinity, NaN
+   } else if (type === 'RegExp') {
+      val = {
+         source: what.source,
+         options: what.options
+      };
+   } else {
+      val = what;
+   }
+   return {
+      __TYPE__: type,
+      __VALUE__: val
+   };
+};
+
+Env.__decode = function decode(what) {
+   types 
+}
+
+Env.prototype.add = function add() {
+   
+}
+
+_R.createEnv = function createEnv() {
+   var env = new Env();
+   env.functions = [];
+};
+
+_R.restoreEnv = function restoreEnv(object, target) {
+   if (typeof object === 'string') {
+      object = JSON.parse(object);
+   }
+   target = target || this; // global
+   if (object.__DECODER__ !== '_R') {
+      throw new Error('_R can not decode this object');
+   }
+   
+}
+
+_R.Expression = function Expression() {
+   
+};
 
 
 
+_R.Expression.from = function(what, maxTime) {
 
-
+   maxTime = maxTime || 500; // prevents infinite search
+   var endTime = Date.now() + maxTime;
+   var expression = [];
+   var global = this;
+   var fromWhere = target.__expression || 'global';
+   var found;
+   var toSearch = _R.getObjectPropertiesNames(global);
+   var i = 0;
+   while (toSearch.length && Date.now() < endTime) {
+      curr = toSearch.pop();
+      if (global[curr] === what) {
+         return 'global['+JSON.stringify(curr)+']';
+      }
+   }
+   throw new Error('_R.Expression.from could\'t find given object');
+};
 
 return _R;
 }));
