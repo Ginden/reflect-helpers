@@ -125,11 +125,11 @@ _R.construct(constructor, args)
 ```
 This function follows specification of `Reflect.construct` from ES6 ([26.1.2](http://people.mozilla.org/~jorendorff/es6-draft.html#sec-reflect.construct)).
 
-### createProxy
+#### Usage example
 ```javascript
-_R.createProxy(target, getHandler, setHandler);
+_R.construct(Date, [30,3,1990]);
 ```
-Alias for `new _R.Proxy`.
+
 
 ### Proxy
 
@@ -139,8 +139,17 @@ new _R.Proxy(target, getHandler, setHandler);
 
 Creates proxy object for target.
 
+#### createProxy
+
+```javascript
+_R.createProxy(target, getHandler, setHandler);
+```
+
+Alias for `new _R.Proxy`.
+
 #### Usage example
 
+```
 function Circle(r) {
 this.diameter = undefined;  // property have to exist 
 this.area = undefined;      // property have to exist
@@ -163,8 +172,15 @@ Circle.setter = function circleSetter(originalObject, proxyObject, propertyName,
         throw Error('You can not modify anything in circle except radius');
     }
     else {
-        originalObject.radius = propertyValue;
+        return originalObject.radius = propertyValue;
     }
 }
 
 var k = new Circle(5);
+k.radius === k.diameter*2; // true
+k.diameter = 7; // Error: You can not modify anything in circle except radius
+k.oh = 'hai'; // Error in strict mode; Does nothing outside of strict mode
+k.radius = 11; // works
+console.log(k.diameter); // 22
+```
+
