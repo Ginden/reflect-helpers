@@ -149,7 +149,7 @@ Alias for `new _R.Proxy`.
 
 #### Usage example
 
-```
+```javascript
 function Circle(r) {
 this.diameter = undefined;  // property have to exist 
 this.area = undefined;      // property have to exist
