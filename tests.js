@@ -186,40 +186,6 @@ for (var i = 0; i < values.length; i++) {
 }
 })();
 
-(function(){
-    console.log('\n\tTesting _R.getInternalClass \n');
-var values = [
-    ['abcd',                'String'],
-    [5,                     'Number'],
-    [null,                  'Null',      true],
-    [undefined,             'Undefined', true],
-    [Function(),            'Function'],
-    [this,                  'global',    true],
-    [{},                    'Object'],
-    [[],                    'Array'],
-    [Infinity,              'Number'],
-    [NaN,                   'Number'],
-    [true,                  'Boolean'],
-    [new String('oh hai'),  'String'],
-];
-if (typeof Symbol !== 'undefined') {
-    values.push([Symbol(), 'Symbol', true]);
-}
-var func, expectedVal, implementationDependant, test;
-for (var i = 0; i < values.length; i++) {
-    func = values[i][0];
-    expectedVal = values[i][1];
-    implementationDependant = !!(values[i][2]);
-    expect(
-        _R.getInternalClass(func)
-    ).toEqual(
-        expectedVal
-    ).setTestName('Is '+func+' [[Class]] equal to '+expectedVal+'?').run().end(implementationDependant);
-}
-})();
-
-
-
 console.log('\n\n\tTESTS PASSED SUCCESFULLY!\n\n');
 
 
