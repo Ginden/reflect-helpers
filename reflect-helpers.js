@@ -29,8 +29,9 @@ _R.__supportsObjectDefineProperties = (function(){
       return false;
    }
    try {
-      Object.defineProperty({}, 'wow', {value: 3});
-      return true;
+      var q = {};
+      Object.defineProperty(q, 'wow', {value: 3});
+      return q.wow === 3;
    } catch (e) {
       return false;
    }
