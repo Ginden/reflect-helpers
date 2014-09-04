@@ -81,7 +81,8 @@ Example:
 console.log(window.$) // undefined
 var showFactorial = _R.createClosure(
     function (n) {
-        var prev = n  || 1;
+        if (!n || n === 1)
+            return 1;
         var curr = n*factorial(n-1);
         $('div.factorial').html(curr);
         return curr;
