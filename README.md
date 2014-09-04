@@ -3,6 +3,29 @@ _R
 
 _R is a reflection library.
 
+## Installation
+
+```
+npm install reflect-r
+```
+
+```javascript
+var _R = require('reflect-r');
+```
+
+### Compatibility, requirements
+
+_R requires following ES5/ES6 features:
+
+#### Required functions (some functions can not work without them)
+* Object.defineProperty
+* Object.getOwnPropertyDescriptor
+* JSON.stringify (can be polyfilled)
+
+### Recommended functions (some functions can work incorrectly without them)
+* Object.getPrototypeOf
+* Object.getOwnPropertyNames
+
 
 ## _R settings
 
