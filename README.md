@@ -189,10 +189,10 @@ Alias for `new _R.Proxy`.
 
 ```javascript
 function Circle(r) {
-this.diameter = undefined;  // property have to exist 
-this.area = undefined;      // property have to exist
-this.radius = r;
-return _R.createProxy(this, Circle.getter, Circle.setter);
+    this.diameter = undefined;  // property have to exist 
+    this.area = undefined;      // property have to exist
+    this.radius = r;
+    return _R.createProxy(this, Circle.getter, Circle.setter);
 }
 Circle.getter = function circleGetter(originalObject, proxyObject, propertyName) {
     if (propertyName === 'radius') {
