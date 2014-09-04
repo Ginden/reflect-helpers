@@ -1,5 +1,5 @@
 {
-  "name": "_R",
+  "name": "reflect-r",
   "version": "0.4.0",
   "description": "_R is a reflection library.",
   "main": "reflect-helpers.js",
@@ -18,5 +18,8 @@
   ],
   "author": "Michał \"Ginden\" Wadas",
   "license": "MIT",
-  "readmeFilename": "README.md"
+  "bugs": {
+    "url": "https://github.com/Ginden/reflect-helpers/issues"
+  },
+  "homepage": "https://github.com/Ginden/reflect-helpers"
 }
