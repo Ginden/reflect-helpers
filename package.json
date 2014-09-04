@@ -1,0 +1,22 @@
+{
+  "name": "_R",
+  "version": "0.4.0",
+  "description": "_R is a reflection library.",
+  "main": "reflect-helpers.js",
+  "scripts": {
+    "test": "node tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ginden/reflect-helpers.git"
+  },
+  "keywords": [
+    "reflection",
+    "es6",
+    "reflect",
+    "_R"
+  ],
+  "author": "Michał \"Ginden\" Wadas",
+  "license": "MIT",
+  "readmeFilename": "README.md"
+}
