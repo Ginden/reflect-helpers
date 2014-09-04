@@ -26,6 +26,20 @@ _R requires following ES5/ES6 features:
 * Object.getPrototypeOf
 * Object.getOwnPropertyNames
 
+### Tested environments
+
+These enviroments pass automatic tests.
+* Node 0.8.14
+* Firefox 33
+* Chrome 36
+See section 'Implementation dependant' for futher information.
+
+### Test coverage
+Automatic tests exist for:
+* `_R.isValidVariableName`
+* `_R.isBoundOrNativeFunction`
+* `_R.getFunctionSourceCode`
+* `_R.getInternalClass`
 
 ## _R settings
 
