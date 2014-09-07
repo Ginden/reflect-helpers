@@ -257,16 +257,17 @@
                 var k = new Circle(5);
                 expect(k.radius * 2)
                     .toEqual(k.diameter)
+                    .setTestName('k.radius *2 === k.diameter')
                     .run()
                     .end(); // true
                 var test = expect(k.diameter);
                 try {
                     k.diameter = 7; // Error: You can not modify anything in circle except radius
-
                     nonexistingVariableName;
                 } catch (e) {
                     if (e.message === 'You can not modify anything in circle except radius')
                         test.toEqual(10)
+                        .setTestName('was k.diameter modified? ')
                         .run()
                         .end();
                     else
@@ -276,6 +277,7 @@
                 k.radius = 11; // works
                 expect(k.diameter)
                     .toEqual(22)
+                    .setTestName('k.diameter === 22')
                     .run()
                     .end();
             })();
