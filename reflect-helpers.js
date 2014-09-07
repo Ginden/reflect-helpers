@@ -417,7 +417,39 @@ _R.construct = function construct(target, args) {
    
    var source = 'return (new Constructor('+argsList.join(', ')+'));';
    return Function('Constructor', source).apply(null, [target].concat(args));
-}
+};
+
+
+/**
+ * Applies function with specified arguments and this value
+ * Follows spec of ES6 Reflect.apply
+ * @method
+ * @param {function} target
+ * @param {Object} thisArg
+ * @param {Array} args
+ * @returns {*} 
+ */
+
+_R.apply = function ReflectApply(target, thisArg, args) {
+   return Function.apply.call(target, thisArg, args);
+};
+
+
+
+/**
+ * Checks if target has a property key
+ * Follows spec of ES6 Reflect.has
+ * @method
+ * @param {function} target
+ * @param {string|symbol} key
+ * @returns {*} 
+ */
+
+_R.has = function ReflectHas(target, key) {
+   return Object.prototype.hasOwnProperty.call(target, key);
+};
+
+
 
 _R.toString = function() {
     return '[Object _R]';
@@ -508,6 +540,9 @@ _R.Expression.from = function(what, maxTime) {
    }
    throw new Error('_R.Expression.from could\'t find given object');
 };
+
+
+
 
 return _R;
 }));
