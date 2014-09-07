@@ -32,6 +32,7 @@ These enviroments pass automatic tests.
 * Node 0.8.14
 * Firefox 33
 * Chrome 36
+
 See section 'Implementation dependant' for futher information.
 
 ### Test coverage
@@ -204,7 +205,8 @@ Circle.getter = function circleGetter(originalObject, proxyObject, propertyName)
     if (propertyName === 'area') {
         return proxyObject.radius*proxyObject.radius*Math.PI;
     }
-}
+};
+
 Circle.setter = function circleSetter(originalObject, proxyObject, propertyName, propertyValue) {
     if (propertyName !== 'radius') {
         throw Error('You can not modify anything in circle except radius');
@@ -212,7 +214,7 @@ Circle.setter = function circleSetter(originalObject, proxyObject, propertyName,
     else {
         return originalObject.radius = propertyValue;
     }
-}
+};
 
 var k = new Circle(5);
 k.radius === k.diameter*2; // true
