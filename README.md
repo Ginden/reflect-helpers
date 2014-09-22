@@ -224,3 +224,22 @@ k.radius = 11; // works
 console.log(k.diameter); // 22
 ```
 
+#### forbidPropertyNames
+```javascript
+_R.forbidPropertyNames(what, ...names)
+```
+Forbids writing to properties of object.
+Returns modified `what`.
+`...names` can be any combination of strings and array of strings.
+#### Usage example
+```javascript
+_R.forbidPropertyNames(Object.prototype, ['get', 'set'], 'enumerable', ['writable', 'configurable']);
+Object.prototype.get = function(){}; // throws TypeError
+```
+#### addMagicLengthProperty
+```javascript
+_R.addMagicLengthProperty(what [,readOnly=true]);
+```
+Adds magic `length` property to `what` object.
+If `readOnly` argument is false, changes in `length` property will remove indexes over specified length.
+If `readOnly` arguments is false, `_R.addMagicLengthProperty` cannot be safely used with prototypes.
