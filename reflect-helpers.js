@@ -516,33 +516,74 @@ _R.restoreEnv = function restoreEnv(object, target) {
    
 }
 
-_R.Expression = function Expression() {
-   
-};
+/**
+ * Forbids writing to properties from `args` of `what` object
+ * @method
+ * @param {what} target
+ * @param {string|string*} ...args
+ * @returns {*} 
+ */
 
-
-
-_R.Expression.from = function(what, maxTime) {
-
-   maxTime = maxTime || 500; // prevents infinite search
-   var endTime = Date.now() + maxTime;
-   var expression = [];
-   var global = this;
-   var fromWhere = target.__expression || 'global';
-   var found;
-   var toSearch = _R.getObjectPropertiesNames(global);
-   var i = 0;
-   while (toSearch.length && Date.now() < endTime) {
-      curr = toSearch.pop();
-      if (global[curr] === what) {
-         return 'global['+JSON.stringify(curr)+']';
-      }
+_R.forbidPropertyNames = function forbidPropertyNames(what) {
+   var unpacked = [].concat.apply([],[].slice.call(arguments, 1));
+   var key;
+   for (var i=0; i < unpacked.length; i++) {
+      key = unpacked[i];
+      Object.defineProperty(
+         what, key, {
+            enumerable: false,
+            configurable: false,
+            writable: false,
+            get: function() {
+               return undefined;
+            },
+            set: _R.__setterAccessDenied.bind(what, key)
+         }
+      );
    }
-   throw new Error('_R.Expression.from could\'t find given object');
 };
 
+_R.__setterAccessDenied = function(propertyName, value, message, error) {
+   message = message || 'Can\'t write to ('+this+')['+JSON.stringify(propertyName)+']!';
+   error = error || TypeError;
+   if (error) {
+      throw new error(message);
+   }
+   else {
+      return undefined;
+   }
+};
 
+_R.addMagicLengthProperty = function addMagicLengthProperty(what, readOnly) {
+   if (arguments.length < 2) {
+      readOnly = true;
+   }
+   Object.defineProperty(what, 'length', {
+      configurable: false,
+      enumerable: false,
+      get: _R.__magicLengthGetter,
+      set: readOnly ? _R.__emptyFunction : _R__magicLengthSetter
+   }
+   );
+   return what;
+};
 
+_R.__magicLengthGetter = function magicLengthGetter() {
+   var last = Object.keys(this).map(Number).filter(function(el){return el === el;}).sort().pop();
+   if (last === undefined) {
+      return 0;
+   }
+   return last + 1;
+};
+
+_R.__magicLengthSetter = function magicLengthSetter(val) {
+   Object.keys(this).map(Number).filter(function(el){
+      return el === el && (el >= val);
+   }).forEach(function(el,i,arr){
+      delete arr[el];
+   });
+   return val;
+};
 
 return _R;
 }));
