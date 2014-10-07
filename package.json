@@ -1,6 +1,6 @@
 {
   "name": "reflect-r",
-  "version": "0.5.1",
+  "version": "0.5.5",
   "description": "_R is a reflection library.",
   "main": "reflect-helpers.js",
   "scripts": {
