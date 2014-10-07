@@ -64,7 +64,8 @@ var getNaiveFunctionSourceCode = Function.call.bind(Function.toString);
  _R.$setDirective(_R.DIRECTIVE_STRICT);
 /**
  * Tests variable name against current implementation rules.
- * " If you were to summarize all these rules in a single ASCII-only regular expression for JavaScript, it would be 11,236 characters long."
+ * " If you were to summarize all these rules in a single ASCII-only regular expression for JavaScript,
+ *   it would be 11,236 characters long".
  * @method
  * @param {string} name - string to be tested
  * @returns {boolean}
@@ -72,7 +73,7 @@ var getNaiveFunctionSourceCode = Function.call.bind(Function.toString);
 
 _R.isValidVariableName = function isValidVariableName(name) {
     try {
-        Function(name, '');
+        Function(name, ''); 
     }
     catch (e) {
         return false;
@@ -147,7 +148,7 @@ _R.isBoundOrNativeFunction = function isBoundOrNativeFunction(func) {
  * @method
  * @param {function} func - function to be stringified
  * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
- * @returns {string}
+ * @returns {String}
  */
 
 _R.getFunctionSourceCode = function getFunctionSourceCode(func) {
@@ -184,7 +185,7 @@ _R.declosureFunction = function(func, transformer) {
 /**
  * Creates named function using Function constructor
  * @method
- * @param {string} name - function name (exists in function scope, used for recursive calls, shouldn't be confused with function.name property)
+ * @param {string} name - function name (used for recursive calls, shouldn't be confused with function.name property)
  * @param {...string} restArgs - arguments to Function constructor
  * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
  */
@@ -195,19 +196,17 @@ _R.createNamedFunction = function createNamedFunction(name, restArgs) {
         throw new NativeFunctionSuppliedError();
     }
     restArgs = Array.prototype.slice.call(arguments, 1);
-    return _R.declosureFunction(
-            function($$$1){
-                $$$directive;
-                $$$1 = $$$2;
-                return $$$1;
-            },
-            function transformSource(sourceCode){
-                return sourceCode
-                    .replace('$$$1', name, 'g')
-                    .replace('$$$directive', _R.__directive)
-                    .replace('$$$2', '('+_R.getFunctionSourceCode(Function.apply(null, restArgs))+')', 'g');
-            }
-    )();
+    var tempFuncSource = _R.getFunctionSourceCode(Function.apply(null, restArgs));
+    var newFuncSource;
+    if (tempFuncSource.indexOf('function anonymous')) === 0)	 {
+    	tempFuncSource = tempFuncSource.split('\n');
+    	tempFuncSource[0] = tempFuncSource.replace('anonymous', name+' ');
+    	newFuncSource = tempFuncSource.join('\n');
+    }
+    else {
+    	newFuncSource = 'function '+name+' '+tempFuncSource.slice(tempFuncSource.indexOf('('));
+    }
+    return _R.indirectEval(newFuncSource);
 };
 
 /**
