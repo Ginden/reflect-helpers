@@ -251,7 +251,7 @@ _R.getObjectPrototype = function getObjectPrototype(what) {
         return Object.getPrototypeOf(what);
     }
     else if (({}).__proto__) {
-        return what.__proto__
+        return what.__proto__;
     }
     else {
         // This branch doesn't work in certain cases
