@@ -26,18 +26,8 @@
         - [transformer](#transformer)
       - [createNamedFunction](#createnamedfunction)
       - [createClosure](#createclosure)
-    - [indirectEval](#indirecteval)
-  - [ES6 Reflect methods](#es6-reflect-methods)
-    - [construct](#construct)
+    - [makeGeneric](#makegeneric)
       - [Usage example](#usage-example)
-    - [has](#has)
-  - [Create and modify objects](#create-and-modify-objects)
-    - [Proxy](#proxy)
-      - [createProxy](#createproxy)
-      - [Usage example](#usage-example-1)
-    - [forbidPropertyNames](#forbidpropertynames)
-      - [Usage example](#usage-example-2)
-    - [addMagicLengthProperty](#addmagiclengthproperty)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
