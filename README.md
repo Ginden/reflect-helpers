@@ -209,6 +209,18 @@ var showFactorial = _R.createClosure(
 showFactorial(5);
 ```
 
+### makeGeneric
+```javascript
+_R.makeGeneric(func);
+```
+Changes method to function accepting `this` as first argument.
+#### Usage example
+```javascript
+var slice = _R.makeGeneric([].slice);
+slice(arguments, 2, 7);
+
+## Utility
+
 ### indirectEval
 ```javascript
 _R.indirectEval(code[, preparationCode]);
@@ -216,6 +228,8 @@ _R.indirectEval(code[, preparationCode]);
 Works like `eval` but:
 - code scope and context always follow rules for ECMAScript strict mode `eval`
 - if preparationCode isn't supplied, code is run with global settings directive (default: 'use strict')
+
+
 
 ## ES6 Reflect methods
 
@@ -237,6 +251,14 @@ _R.has(obj, key)
 
 This function follows specification of `Reflect.has` from ES6 ([26.1.9](http://people.mozilla.org/~jorendorff/es6-draft.html#sec-reflect.has)).
 
+### apply
+```javascript
+_R.apply(function, target, args);
+```
+
+This function follows specification of `Reflect.apply` from ES6 ([26.1.3](http://people.mozilla.org/~jorendorff/es6-draft.html#sec-reflect.apply)).
+
+
 ## Create and modify objects
 
 
@@ -255,6 +277,13 @@ _R.createProxy(target, getHandler, setHandler);
 ```
 
 Alias for `new _R.Proxy`.
+
+#### defaultSetter
+```javascript
+_R.defaultSetter
+```
+
+Transfers assigment to original object.
 
 #### Usage example
 
