@@ -1,3 +1,46 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+
+- [_R](#_r)
+  - [Installation](#installation)
+    - [Compatibility, requirements](#compatibility-requirements)
+      - [Required functions (some functions can not work without them)](#required-functions-some-functions-can-not-work-without-them)
+    - [Recommended functions (some functions can work incorrectly without them)](#recommended-functions-some-functions-can-work-incorrectly-without-them)
+    - [Tested environments](#tested-environments)
+    - [Test coverage](#test-coverage)
+  - [_R settings](#_r-settings)
+      - [Avaible directives](#avaible-directives)
+    - [Implementation dependant](#implementation-dependant)
+  - [_R methods](#_r-methods)
+    - [Checks and tests](#checks-and-tests)
+      - [isValidVariableName](#isvalidvariablename)
+      - [isBoundOrNativeFunction](#isboundornativefunction)
+    - [Retrieve informations](#retrieve-informations)
+      - [getFunctionSourceCode](#getfunctionsourcecode)
+      - [getInternalClass](#getinternalclass)
+      - [getObjectPrototype](#getobjectprototype)
+      - [getPrototypesChain](#getprototypeschain)
+    - [Modify functions](#modify-functions)
+      - [declosureFunction](#declosurefunction)
+        - [transformer](#transformer)
+      - [createNamedFunction](#createnamedfunction)
+      - [createClosure](#createclosure)
+    - [indirectEval](#indirecteval)
+  - [ES6 Reflect methods](#es6-reflect-methods)
+    - [construct](#construct)
+      - [Usage example](#usage-example)
+    - [has](#has)
+  - [Create and modify objects](#create-and-modify-objects)
+    - [Proxy](#proxy)
+      - [createProxy](#createproxy)
+      - [Usage example](#usage-example-1)
+    - [forbidPropertyNames](#forbidpropertynames)
+      - [Usage example](#usage-example-2)
+    - [addMagicLengthProperty](#addmagiclengthproperty)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 _R
 ===============
 
@@ -8,10 +51,11 @@ _R is a reflection library.
 ```
 npm install reflect-r
 ```
-
+Node.js:
 ```javascript
 var _R = require('reflect-r');
 ```
+Browsers:
 ```html
 <script src="./reflect-helpers.js"></script>
 ```
@@ -251,7 +295,7 @@ k.radius = 11; // works
 console.log(k.diameter); // 22
 ```
 
-#### forbidPropertyNames
+### forbidPropertyNames
 ```javascript
 _R.forbidPropertyNames(what, ...names)
 ```
@@ -263,7 +307,7 @@ Returns modified `what`.
 _R.forbidPropertyNames(Object.prototype, ['get', 'set'], 'enumerable', ['writable', 'configurable']);
 Object.prototype.get = function(){}; // throws TypeError
 ```
-#### addMagicLengthProperty
+### addMagicLengthProperty
 ```javascript
 _R.addMagicLengthProperty(what [,readOnly=true]);
 ```
