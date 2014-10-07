@@ -230,9 +230,7 @@ _R.createClosure = function createClosure(func, context, name) {
             argumentsValues.push(context[key])
         }
     }
-
     var sourceCode = _R.__directive+';\n var '+name+ '= ('+_R.getFunctionSourceCode(func)+'); return '+name+';';
-    
     return Function.apply(null, argumentsNames.concat(sourceCode)).apply(null, argumentsValues);
 };
 
