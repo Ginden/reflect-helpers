@@ -569,21 +569,33 @@ _R.addMagicLengthProperty = function addMagicLengthProperty(what, readOnly) {
 };
 
 _R.__magicLengthGetter = function magicLengthGetter() {
-   var last = Object.keys(this).map(Number).filter(function(el){return el === el;}).sort().pop();
-   if (last === undefined) {
+   var last = Math.max.apply(null,
+            Object.keys(this)
+               .map(Number)
+               .filter(function(el){
+                  return el > 0 && el === el;
+               })
+   );
+   if (last === -Infinity) {
       return 0;
    }
    return last + 1;
 };
 
 _R.__magicLengthSetter = function magicLengthSetter(val) {
-   Object.keys(this).map(Number).filter(function(el){
-      return el === el && (el >= val);
-   }).forEach(function(el,i,arr){
-      delete arr[el];
-   });
+   Object.keys(this).forEach(function(el,i,arr) {
+      var modified = Number(el);
+      if (modified === modified && modified >= val) {
+         delete this[el];
+      }
+   }, this);
    return val;
 };
+
+_R.makeGeneric = function demethodify(func) {
+   return Function.call.bind(func);
+};
+
 
 return _R;
 }));
