@@ -12,6 +12,9 @@ npm install reflect-r
 ```javascript
 var _R = require('reflect-r');
 ```
+```html
+<script src="./reflect-helpers.js"></script>
+```
 
 ### Compatibility, requirements
 
@@ -57,6 +60,13 @@ _R.DIRECTIVE_NORMAL // ''; is placed before every new function
 _R.DIRECTIVE_STRICT // 'use strict'; is placed before every function; default
 _R.DIRECTIVE_ASM    // 'use asm'; is placed before every new function
 ```
+
+### Implementation dependant
+* `_R.isValidVariableName` tests variable name against **current implementation** rules. 
+* `_R.isBoundOrNativeFunction` is slow in V8 (due to V8's incompatibility with ES6 spec).
+* `_R.getObjectPrototype` can fail in IE8 and lower. Internally it prefers `Object.getPrototypeOf` over `.__proto__` over `.constructor.prototype`.
+
+
 ## _R methods
 
 ### Checks and tests
@@ -74,6 +84,8 @@ _R.isBoundOrNativeFunction(func)
 ```
 Checks if supplied `func` is bound (`.bind`) or native code.
 
+### Retrieve informations
+
 #### getFunctionSourceCode
 
 ```javascript
@@ -88,6 +100,26 @@ Returns `FunctionExpression`. Throws error when called on non-function, bound fu
 _R.getInternalClass(what)
 ```
 Returns `[[Class]]`'s name of `what`.
+
+#### getObjectPrototype
+
+```javascript
+_R.getObjectPrototype(what)
+```
+If `what` is an object, returns it's prototype. Otherwise, returns `null`.
+Can return invalid object in IE8 and lower.
+
+#### getPrototypesChain
+
+```javascript
+_R.getPrototypesChain(what)
+```
+If `what` is an object, returns array containing `what` and objects in it's prototype chain (array ends with `null`).
+Otherwise, return `[what, null]`.
+When cyclical reference is detected (possible in IE8 and lower), function returns with current prototypes list.
+
+### Modify functions
+
 
 #### declosureFunction
 
@@ -106,7 +138,7 @@ Returns `func` redefined in global context. `transformer` function is called on 
 ```javascript
 _R.createNamedFunction(name, [...argsNames[, sourceCode]])
 ```
-Works like `Function` constructor but first argument is the function name (used in recursive calls; shouldn't be confused with non-standard property `function.name`).
+Works like `Function` constructor but first argument is the function name (used in recursive calls).
 
 #### createClosure
 
@@ -133,23 +165,6 @@ var showFactorial = _R.createClosure(
 showFactorial(5);
 ```
 
-#### getObjectPrototype
-
-```javascript
-_R.getObjectPrototype(what)
-```
-If `what` is an object, returns it's prototype. Otherwise, returns `null`.
-Can return invalid object in IE8 and lower.
-
-#### getPrototypesChain
-
-```javascript
-_R.getPrototypesChain(what)
-```
-If `what` is an object, returns array containing `what` and objects in it's prototype chain (array ends with `null`).
-Otherwise, return `[what, null]`.
-When cyclical reference is detected (possible in IE8 and lower), function returns with current prototypes list.
-
 ### indirectEval
 ```javascript
 _R.indirectEval(code[, preparationCode]);
@@ -157,6 +172,8 @@ _R.indirectEval(code[, preparationCode]);
 Works like `eval` but:
 - code scope and context always follow rules for ECMAScript strict mode `eval`
 - if preparationCode isn't supplied, code is run with global settings directive (default: 'use strict')
+
+## ES6 Reflect methods
 
 ### construct
 ```javascript
@@ -169,6 +186,15 @@ This function follows specification of `Reflect.construct` from ES6 ([26.1.2](ht
 _R.construct(Date, [30,3,1990]);
 ```
 
+### has
+```javascript
+_R.has(obj, key)
+```
+
+This function follows specification of `Reflect.has` from ES6 ([26.1.9](http://people.mozilla.org/~jorendorff/es6-draft.html#sec-reflect.has)).
+
+## Create and modify objects
+
 
 ### Proxy
 
@@ -176,7 +202,7 @@ _R.construct(Date, [30,3,1990]);
 new _R.Proxy(target, getHandler, setHandler);
 ```
 
-Creates proxy object for target.
+Creates proxy object for target. Proxy objects are sealed (`Object.seal`).
 
 #### createProxy
 
@@ -190,6 +216,7 @@ Alias for `new _R.Proxy`.
 
 ```javascript
 function Circle(r) {
+	'strict mode';
     this.diameter = undefined;  // property have to exist 
     this.area = undefined;      // property have to exist
     this.radius = r;
@@ -218,8 +245,8 @@ Circle.setter = function circleSetter(originalObject, proxyObject, propertyName,
 
 var k = new Circle(5);
 k.radius === k.diameter*2; // true
-k.diameter = 7; // Error: You can not modify anything in circle except radius
-k.oh = 'hai'; // Error in strict mode; Does nothing outside of strict mode
+k.diameter = 7; // Always throw Error: You can not modify anything in circle except radius
+k.oh = 'hai'; // Error in strict mode; Does nothing in sloppy mode
 k.radius = 11; // works
 console.log(k.diameter); // 22
 ```
@@ -241,5 +268,8 @@ Object.prototype.get = function(){}; // throws TypeError
 _R.addMagicLengthProperty(what [,readOnly=true]);
 ```
 Adds magic `length` property to `what` object.
+
 If `readOnly` argument is false, changes in `length` property will remove indexes over specified length.
+
 If `readOnly` arguments is false, `_R.addMagicLengthProperty` cannot be safely used with prototypes.
+
