@@ -78,6 +78,8 @@ Automatic tests exist for:
 * `_R.isBoundOrNativeFunction`
 * `_R.getFunctionSourceCode`
 * `_R.getInternalClass`
+* `_R.indirectEval`
+* `_R.Proxy`
 
 ## _R settings
 
@@ -208,6 +210,7 @@ Changes method to function accepting `this` as first argument.
 ```javascript
 var slice = _R.makeGeneric([].slice);
 slice(arguments, 2, 7);
+```
 
 ## Utility
 
