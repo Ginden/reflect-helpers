@@ -17,7 +17,8 @@ root._R = factory();
 }(this, function () {
 var _R = {};
 var indirectEval = function indirectEval(code, preparationCode) {
-         return Function('code', (arguments.length > 1 ? preparationCode : _R.__directive) + ';\n return eval(arguments[0])')(code)
+         return Function('code', (preparationCode || '') + 
+         ';\n return eval(arguments[0])').call(null,code);
 };
 
 
@@ -79,7 +80,7 @@ _R.isValidVariableName = function isValidVariableName(name) {
         return false;
     }
     return true;
-}
+};
 
 function NativeFunctionSuppliedError() {
     var ret = objectCreate(new Error());
@@ -102,10 +103,11 @@ function objectCreate(proto) {
 function removeDuplicatesFromStringArray(what) {
    var dict = objectCreate(null);
    var ret = [];
-   for (var i=0; i < what.length; i++) {
+   var i,key;
+   for (i=0; i < what.length; i++) {
       dict[what[i]] = true;
    }
-   for (var key in dict) {
+   for (key in dict) {
       ret.push(key);
    }
    return ret;
@@ -178,9 +180,9 @@ _R.getInternalClass = function (what) {
  */
 
 _R.declosureFunction = function(func, transformer) {
-    transformer = transformer || function(a) {return a};
+    transformer = transformer || function(a) {return a;};
     return indirectEval('('+transformer(_R.getFunctionSourceCode(func), func)+')');
-}
+};
 
 /**
  * Creates named function using Function constructor
@@ -198,7 +200,7 @@ _R.createNamedFunction = function createNamedFunction(name, restArgs) {
     restArgs = Array.prototype.slice.call(arguments, 1);
     var tempFuncSource = _R.getFunctionSourceCode(Function.apply(null, restArgs));
     var newFuncSource;
-    if (tempFuncSource.indexOf('function anonymous')) === 0)	 {
+    if (tempFuncSource.indexOf('function anonymous') === 0)	 {
     	tempFuncSource = tempFuncSource.split('\n');
     	tempFuncSource[0] = tempFuncSource.replace('anonymous', name+' ');
     	newFuncSource = tempFuncSource.join('\n');
@@ -224,13 +226,14 @@ _R.createClosure = function createClosure(func, context, name) {
     name = _R.isValidVariableName(name) ? name : 'anonymous';
     var argumentsNames  = [];
     var argumentsValues = [];
-    for (var key in context) {
+    var key, sourceCode;
+    for (key in context) {
         if (Object.hasOwnProperty.call(context, key) && _R.isValidVariableName(key)) {
             argumentsNames.push(key);
             argumentsValues.push(context[key])
         }
     }
-    var sourceCode = _R.__directive+';\n var '+name+ '= ('+_R.getFunctionSourceCode(func)+'); return '+name+';';
+    sourceCode = _R.__directive+';\n var '+name+ '= ('+_R.getFunctionSourceCode(func)+'); return '+name+';';
     return Function.apply(null, argumentsNames.concat(sourceCode)).apply(null, argumentsValues);
 };
 
@@ -305,7 +308,6 @@ _R.getObjectPropertiesNames = function getObjectPropertiesNames(what, searchInPr
    if (searchInPrototypes) {
       keys.push.apply(keys, _R.getObjectPropertiesNames(_R.getObjectPrototype(what), true));
    }
-   
    return keys;
 }
 
