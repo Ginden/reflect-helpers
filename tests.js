@@ -1,4 +1,5 @@
 (function(_R) {
+	var global = this || (1,eval)(this);
     try {
         function expect(expected) {
             expect.count = 0 || expect.count++;
@@ -283,10 +284,40 @@
             })();
 
 
-            console.log('\n\n\tTESTS PASSED SUCCESFULLY!\n\n');
 
 
         })();
+    
+        (function() {
+            console.log('\n\tTesting _R.indirectEval \n');
+            expect(_R.indirectEval('"wow"'))
+            	.toEqual("wow")
+            	.setTestName('Returning values from indirectEval. ')
+            	.run()
+            	.end();
+			expect(_R.indirectEval('this'))
+				.toEqual(global)
+				.setTestName('Checking this in indirectEval. Should be global object. ')
+				.run()
+				.end();
+			expect(_R.indirectEval('2+3'))
+				.toEqual(5)
+				.setTestName('Checking simple expressions in indirectEval. ')
+				.run()
+				.end()
+			_R.indirectEval('var a = 3;')
+			expect(global.a)
+				.toEqual(undefined)
+				.setTestName('Checking if indirectEval modifies global scope. ')
+				.run()
+				.end();
+			
+        })();
+        
+   
+   
+     console.log('\n\n\tTESTS PASSED SUCCESFULLY!\n\n');
+
     } catch (e) {
         console.log(e);
         throw e;
