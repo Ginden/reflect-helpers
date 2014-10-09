@@ -16,14 +16,6 @@ root._R = factory();
 }
 }(this, function () {
 var _R = {};
-var indirectEval = function indirectEval(code, preparationCode) {
-         return Function('code', (preparationCode || '') + 
-         ';\n return eval(arguments[0])').call(null,code);
-};
-
-
-
-_R.indirectEval = indirectEval;
 
 _R.__supportsObjectDefineProperties = (function(){
    if (!Object.defineProperty) {
@@ -39,6 +31,10 @@ _R.__supportsObjectDefineProperties = (function(){
 })();
 
 var getNaiveFunctionSourceCode = Function.call.bind(Function.toString);
+
+/*
+ * SECTION: Settings
+ */
 
  _R.__directives = ['', 'use strict', 'use asm'];
  
@@ -63,24 +59,11 @@ var getNaiveFunctionSourceCode = Function.call.bind(Function.toString);
  
  _R.__directive = '';
  _R.$setDirective(_R.DIRECTIVE_STRICT);
-/**
- * Tests variable name against current implementation rules.
- * " If you were to summarize all these rules in a single ASCII-only regular expression for JavaScript,
- *   it would be 11,236 characters long".
- * @method
- * @param {string} name - string to be tested
- * @returns {boolean}
- */
+ 
 
-_R.isValidVariableName = function isValidVariableName(name) {
-    try {
-        Function(name, ''); 
-    }
-    catch (e) {
-        return false;
-    }
-    return true;
-};
+/*
+ * SECTION: HELPERS
+ */
 
 function NativeFunctionSuppliedError() {
     var ret = objectCreate(new Error());
@@ -113,10 +96,108 @@ function removeDuplicatesFromStringArray(what) {
    return ret;
 }
 
+function typeAssert(el, type, error) {
+	var currType = typeof el;
+	error = error || new TypeError('Invalid typeof argument. Expected "'+type+'", encountered '+currType);
+	if (currType !== type) {
+		throw error;
+	}
+}
+
+/*
+ * SECTION: reference functions
+ */
+
 _R.__boundFunction = (function a(){}).bind(null);
 
 _R.__emptyFunction = Function();
-_R.__emptySetter = Function('a', '');
+_R.__emptySetter = Function('val', '');
+
+/*
+ * SECTION: Semiprivate functions and data
+ * These functions aren't documented but they are exposed at user's risk
+ */
+
+_R.__getDescriptor = function __getDescriptor(what, key) {
+   var descriptor;
+   do {
+      descriptor = Object.getOwnPropertyDescriptor(what, key);
+      what = _R.getObjectPrototype(what)
+   } while (!descriptor && what);
+   return descriptor;
+};
+
+_R.__injectAccesorsToDescriptor = function __injectAccesorsToDescriptor(descriptor, getter, setter) {
+   descriptor.get = getter;
+   descriptor.set = setter;
+   delete descriptor.value;
+   delete descriptor.writable;
+   return descriptor;
+};
+ 
+_R.__createAccesor = function __createGetter(accesor, original, proxy, key) {
+   return accesor.bind(null, original, proxy, key);
+};
+
+_R.__magicLengthGetter = function magicLengthGetter() {
+   var last = Math.max.apply(null,
+            Object.keys(this)
+               .map(Number)
+               .filter(function(el){
+                  return el > 0 && el === el;
+               })
+   );
+   if (last === -Infinity) {
+      return 0;
+   }
+   return last + 1;
+};
+
+_R.__setterAccessDenied = function(propertyName, value, message, error) {
+   message = message || 'Can\'t write to ('+this+')['+JSON.stringify(propertyName)+']!';
+   error = error || TypeError;
+   if (error) {
+      throw new error(message);
+   }
+   else {
+      return undefined;
+   }
+};
+
+_R.__magicLengthSetter = function magicLengthSetter(val) {
+   Object.keys(this).forEach(function(el,i,arr) {
+      var modified = Number(el);
+      if (modified === modified && modified >= val) {
+         delete this[el];
+      }
+   }, this);
+   return val;
+};
+
+
+/*
+ * SECTION: TESTS AND CHECKS
+ */
+
+/**
+ * Tests variable name against current implementation rules.
+ * " If you were to summarize all these rules in a single ASCII-only regular expression for JavaScript,
+ *   it would be 11,236 characters long".
+ * @method
+ * @param {string} name - string to be tested
+ * @returns {boolean}
+ */
+
+_R.isValidVariableName = function isValidVariableName(name) {
+    try {
+        Function(name, ''); 
+    }
+    catch (e) {
+        return false;
+    }
+    return true;
+};
+
 
 /**
  * Tests if function is native or bound
@@ -145,6 +226,37 @@ _R.isBoundOrNativeFunction = function isBoundOrNativeFunction(func) {
 
 };
 
+/*
+ * SECTION: Utility
+ */
+
+/**
+ * Performs indirect eval in isolated subglobal scope.
+ * @method
+ * @param {string} code
+ * @returns {String}
+ */
+
+_R.indirectEval = function indirectEval(code, preparationCode) {
+         return Function('code', (preparationCode || '') + 
+         ';\n return eval(arguments[0])').call(null,code);
+};
+
+/*
+ * Changes method to function accepting `this` as first argument.
+ * @method
+ * @param {function} func
+ * @returns {function}
+ */
+_R.makeGeneric = function demethodify(func) {
+   return Function.call.bind(func);
+};
+
+/*
+ * SECTION: RETRIEVE DATA
+ */
+
+
 /**
  * Returns source code of function or throws error when it's impossible to retrieve
  * @method
@@ -169,72 +281,6 @@ _R.getFunctionSourceCode = function getFunctionSourceCode(func) {
 
 _R.getInternalClass = function (what) {
     return Object.prototype.toString.call(what).match(/^\[object\s(.*)\]$/)[1];
-};
-
-/**
- * Returns function redefined in global context
- * @method
- * @param {function} func - function to be redefined
- * @param {function} [transformer] - transformation function applied to function source code. function callback(sourceCode, func)
- * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
- */
-
-_R.declosureFunction = function(func, transformer) {
-    transformer = transformer || function(a) {return a;};
-    return indirectEval('('+transformer(_R.getFunctionSourceCode(func), func)+')');
-};
-
-/**
- * Creates named function using Function constructor
- * @method
- * @param {string} name - function name (used for recursive calls, shouldn't be confused with function.name property)
- * @param {...string} restArgs - arguments to Function constructor
- * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
- */
-
-_R.createNamedFunction = function createNamedFunction(name, restArgs) {
-    name = name || 'anonymous';
-    if (!_R.isValidVariableName(name)) {
-        throw new NativeFunctionSuppliedError();
-    }
-    restArgs = Array.prototype.slice.call(arguments, 1);
-    var tempFuncSource = _R.getFunctionSourceCode(Function.apply(null, restArgs));
-    var newFuncSource;
-    if (tempFuncSource.indexOf('function anonymous') === 0)	 {
-    	tempFuncSource = tempFuncSource.split('\n');
-    	tempFuncSource[0] = tempFuncSource.replace('anonymous', name+' ');
-    	newFuncSource = tempFuncSource.join('\n');
-    }
-    else {
-    	newFuncSource = 'function '+name+' '+tempFuncSource.slice(tempFuncSource.indexOf('('));
-    }
-    return _R.indirectEval(newFuncSource);
-};
-
-/**
- * Redefines function in context of given object;
- * Default function name is 
- * @method
- * @param {function} func - function name (exists in function scope, shouldn't be confused with function.name property)
- * @param {Object} [context] - context of new function
- * @param {string} [name] - name of new function (defaults to 'anonymous' (will shadow arguments from context))
- * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
- */
-
-_R.createClosure = function createClosure(func, context, name) {
-    context = context || {};
-    name = _R.isValidVariableName(name) ? name : 'anonymous';
-    var argumentsNames  = [];
-    var argumentsValues = [];
-    var key, sourceCode;
-    for (key in context) {
-        if (Object.hasOwnProperty.call(context, key) && _R.isValidVariableName(key)) {
-            argumentsNames.push(key);
-            argumentsValues.push(context[key])
-        }
-    }
-    sourceCode = _R.__directive+';\n var '+name+ '= ('+_R.getFunctionSourceCode(func)+'); return '+name+';';
-    return Function.apply(null, argumentsNames.concat(sourceCode)).apply(null, argumentsValues);
 };
 
 /**
@@ -315,26 +361,83 @@ _R.getObjectPropertiesNames = function getObjectPropertiesNames(what, searchInPr
 
 
 
-_R.__getDescriptor = function __getDescriptor(what, key) {
-   var descriptor;
-   do {
-      descriptor = Object.getOwnPropertyDescriptor(what, key);
-      what = _R.getObjectPrototype(what)
-   } while (!descriptor && what);
-   return descriptor;
+
+/*
+ * SECTION: Modify and create functions
+ */
+
+
+
+/**
+ * Returns function redefined in global context
+ * @method
+ * @param {function} func - function to be redefined
+ * @param {function} [transformer] - transformation function applied to function source code. function callback(sourceCode, func)
+ * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
+ */
+
+_R.declosureFunction = function(func, transformer) {
+    transformer = transformer || function(a) {return a;};
+    return _R.indirectEval('('+transformer(_R.getFunctionSourceCode(func), func)+')');
 };
 
-_R.__injectAccesorsToDescriptor = function __injectAccesorsToDescriptor(descriptor, getter, setter) {
-   descriptor.get = getter;
-   descriptor.set = setter;
-   delete descriptor.value;
-   delete descriptor.writable;
-   return descriptor;
+/**
+ * Creates named function using Function constructor
+ * @method
+ * @param {string} name - function name (used for recursive calls, shouldn't be confused with function.name property)
+ * @param {...string} restArgs - arguments to Function constructor
+ * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
+ */
+
+_R.createNamedFunction = function createNamedFunction(name, restArgs) {
+    name = name || 'anonymous';
+    if (!_R.isValidVariableName(name)) {
+        throw new NativeFunctionSuppliedError();
+    }
+    restArgs = Array.prototype.slice.call(arguments, 1);
+    var tempFuncSource = _R.getFunctionSourceCode(Function.apply(null, restArgs));
+    var newFuncSource;
+    if (tempFuncSource.indexOf('function anonymous') === 0)	 {
+    	tempFuncSource = tempFuncSource.split('\n');
+    	tempFuncSource[0] = tempFuncSource.replace('anonymous', name+' ');
+    	newFuncSource = tempFuncSource.join('\n');
+    }
+    else {
+    	newFuncSource = 'function '+name+' '+tempFuncSource.slice(tempFuncSource.indexOf('('));
+    }
+    return _R.indirectEval(newFuncSource);
 };
- 
-_R.__createAccesor = function __createGetter(accesor, original, proxy, key) {
-   return accesor.bind(null, original, proxy, key);
+
+/**
+ * Redefines function in context of given object;
+ * Default function name is 
+ * @method
+ * @param {function} func - function name (exists in function scope, shouldn't be confused with function.name property)
+ * @param {Object} [context] - context of new function
+ * @param {string} [name] - name of new function (defaults to 'anonymous' (will shadow arguments from context))
+ * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
+ */
+
+_R.createClosure = function createClosure(func, context, name) {
+    context = context || {};
+    name = _R.isValidVariableName(name) ? name : 'anonymous';
+    var argumentsNames  = [];
+    var argumentsValues = [];
+    var key, sourceCode;
+    for (key in context) {
+        if (Object.hasOwnProperty.call(context, key) && _R.isValidVariableName(key)) {
+            argumentsNames.push(key);
+            argumentsValues.push(context[key])
+        }
+    }
+    sourceCode = _R.__directive+';\n var '+name+ '= ('+_R.getFunctionSourceCode(func)+'); return '+name+';';
+    return Function.apply(null, argumentsNames.concat(sourceCode)).apply(null, argumentsValues);
 };
+
+/*
+ * SECTION: Modify and create objects
+ */
+
 
 /**
  * new _R.Proxy is an alias for _R.createProxy
@@ -396,6 +499,58 @@ _R.createProxy = function createProxy() {
 };
 
 /**
+ * Forbids writing to properties from `args` of `what` object
+ * @method
+ * @param {what} target
+ * @param {string|string*} ...args
+ * @returns {*} 
+ */
+
+_R.forbidPropertyNames = function forbidPropertyNames(what) {
+   var unpacked = [].concat.apply([],[].slice.call(arguments, 1));
+   var key;
+   for (var i=0; i < unpacked.length; i++) {
+      key = unpacked[i];
+      Object.defineProperty(
+         what, key, {
+            enumerable: false,
+            configurable: false,
+            writable: false,
+            get: function() {
+               return undefined;
+            },
+            set: _R.__setterAccessDenied.bind(what, key)
+         }
+      );
+   }
+};
+
+
+
+_R.addMagicLengthProperty = function addMagicLengthProperty(what, readOnly) {
+   if (arguments.length < 2) {
+      readOnly = true;
+   }
+   Object.defineProperty(what, 'length', {
+      configurable: false,
+      enumerable: false,
+      get: _R.__magicLengthGetter,
+      set: readOnly ? _R.__emptyFunction : _R__magicLengthSetter
+   }
+   );
+   return what;
+};
+
+
+
+
+
+/*
+ * Reflect polyfill
+ */
+
+
+/**
  * Applies constructor with specified arguments (array or array-like)
  * Follows spec of ES6 Reflect.construct
  * @method
@@ -454,146 +609,6 @@ _R.toString = function() {
     return '[Object _R]';
 };
 
-function Env() {
-   Env.__DECODER__ = '_R';
-}
-
-Env.__serialise = function serialise(what) {
-   var stringRepresentation = {};
-   var type;
-   if (what instanceof _R.Expression) {
-      type = 'expression';
-   } else if (what instanceof RegExp) {
-      type = 'RegExp';
-   } else {
-      type = typeof what;
-   }
-   var ret = {};
-   var val;
-   ret.__TYPE__ = type;
-   if (type === 'object') {
-      val = Env.__serialiseObject(what);
-   } else if (type === 'function') {
-      val = _R.getFunctionSourceCode(what);
-   } else if (type === 'number' || type === 'string') {
-      val = String(what); // JSON.stringify does not preserve Infinity, -Infinity, NaN
-   } else if (type === 'RegExp') {
-      val = {
-         source: what.source,
-         options: what.options
-      };
-   } else {
-      val = what;
-   }
-   return {
-      __TYPE__: type,
-      __VALUE__: val
-   };
-};
-
-Env.__decode = function decode(what) {
-   types 
-}
-
-Env.prototype.add = function add() {
-   
-}
-
-_R.createEnv = function createEnv() {
-   var env = new Env();
-   env.functions = [];
-};
-
-_R.restoreEnv = function restoreEnv(object, target) {
-   if (typeof object === 'string') {
-      object = JSON.parse(object);
-   }
-   target = target || this; // global
-   if (object.__DECODER__ !== '_R') {
-      throw new Error('_R can not decode this object');
-   }
-   
-}
-
-/**
- * Forbids writing to properties from `args` of `what` object
- * @method
- * @param {what} target
- * @param {string|string*} ...args
- * @returns {*} 
- */
-
-_R.forbidPropertyNames = function forbidPropertyNames(what) {
-   var unpacked = [].concat.apply([],[].slice.call(arguments, 1));
-   var key;
-   for (var i=0; i < unpacked.length; i++) {
-      key = unpacked[i];
-      Object.defineProperty(
-         what, key, {
-            enumerable: false,
-            configurable: false,
-            writable: false,
-            get: function() {
-               return undefined;
-            },
-            set: _R.__setterAccessDenied.bind(what, key)
-         }
-      );
-   }
-};
-
-_R.__setterAccessDenied = function(propertyName, value, message, error) {
-   message = message || 'Can\'t write to ('+this+')['+JSON.stringify(propertyName)+']!';
-   error = error || TypeError;
-   if (error) {
-      throw new error(message);
-   }
-   else {
-      return undefined;
-   }
-};
-
-_R.addMagicLengthProperty = function addMagicLengthProperty(what, readOnly) {
-   if (arguments.length < 2) {
-      readOnly = true;
-   }
-   Object.defineProperty(what, 'length', {
-      configurable: false,
-      enumerable: false,
-      get: _R.__magicLengthGetter,
-      set: readOnly ? _R.__emptyFunction : _R__magicLengthSetter
-   }
-   );
-   return what;
-};
-
-_R.__magicLengthGetter = function magicLengthGetter() {
-   var last = Math.max.apply(null,
-            Object.keys(this)
-               .map(Number)
-               .filter(function(el){
-                  return el > 0 && el === el;
-               })
-   );
-   if (last === -Infinity) {
-      return 0;
-   }
-   return last + 1;
-};
-
-_R.__magicLengthSetter = function magicLengthSetter(val) {
-   Object.keys(this).forEach(function(el,i,arr) {
-      var modified = Number(el);
-      if (modified === modified && modified >= val) {
-         delete this[el];
-      }
-   }, this);
-   return val;
-};
-
-_R.makeGeneric = function demethodify(func) {
-   return Function.call.bind(func);
-};
 
 
 return _R;
