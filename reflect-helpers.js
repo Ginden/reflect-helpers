@@ -520,6 +520,29 @@
         return what;
     };
 
+	
+
+	
+	_R.wrapFunction = function wrapFunction(func, before, after, commonData) {
+		typeAssert(func, 'function');
+		var ret = function () {
+			ret.__before && ret.__before(func, this, null, commonData, arguments);
+			var data = Function.apply.call(func, this, arguments);
+			ret.__after && ret.__after(func, this, data, commonData, arguments);
+			return data;
+		};
+		ret.__before = before;
+		ret.__after = after;
+		var properties = _R.getObjectPropertiesNames(func);
+		properties.reduce(function(newFunc,el){
+			newFunc[el] = func[el];
+			return newFunc;
+		}, ret);
+		return ret;
+	}
+
+
+
     /*
      * Reflect polyfill
      */
@@ -537,12 +560,10 @@
         if (typeof target !== 'function') {
             throw new TypeError('_R.construct can be called only on function');
         }
-        args = Array.prototype.slice.call(args);
-        var argsList = [];
-        for (var i = 0; i < args.length; i++) {
-            argsList.push('arguments[' + (i + 1) + ']')
-        }
-
+        args = [].slice.call(args);
+        var argsList = args.reduce(function(list,el,i){
+        	list.push('arguments[' + (i + 1) + ']')
+        }, []);
         var source = 'return (new Constructor(' + argsList.join(', ') + '));';
         return Function('Constructor', source).apply(null, [target].concat(args));
     };
@@ -574,9 +595,14 @@
         return Object.prototype.hasOwnProperty.call(target, key);
     };
 
+
+
+
+
     _R.toString = function() {
         return '[Object _R]';
     };
+
 
     return _R;
 }));
