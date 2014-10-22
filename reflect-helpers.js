@@ -208,6 +208,7 @@
      */
 
     _R.isBoundOrNativeFunction = function isBoundOrNativeFunction(func) {
+        
         var sourceCode = getNaiveFunctionSourceCode(func);
         if (sourceCode === getNaiveFunctionSourceCode(func.bind(null))) {
             return true;
@@ -436,17 +437,21 @@
      */
 
     _R.Proxy = function Proxy(what, getHandler, setHandler) {
-        var proxy = this instanceof Proxy ? this : objectCreate(Proxy.prototype);
         boolAssert(_R.__supportsObjectDefineProperties, new Error('_R.createProxy requires spec-compatible Object.defineProperty to work!'));
         typeAssert(getHandler, 'function', new TypeError('getHandler is not a function!'));
         if (arguments.length > 2) {
             typeAssert(setHandler, 'function', new TypeError('setHandler is not a function!'));
         }
-        setHandler = setHandler || _R.Proxy.defaultSetter;
-        var keys = removeDuplicatesFromStringArray(_R.getObjectPropertiesNames(what, true));
-        var key, originalDescriptor, descriptor, accesorGet, accesorSet;
         
-        keys.forEach(function (key, i) {
+        var proxy = this instanceof Proxy ? this : objectCreate(Proxy.prototype);
+        
+        setHandler = setHandler || _R.Proxy.defaultSetter;
+        
+        
+
+        
+        var keys, key, originalDescriptor, descriptor, accesorGet, accesorSet;
+        removeDuplicatesFromStringArray(_R.getObjectPropertiesNames(what, true)).forEach(function (key, i) {
             descriptor = _R.__getDescriptor(what, key);
             accesorGet = _R.__createAccesor(getHandler, what, proxy, key);
             accesorSet = setHandler ? _R.__createAccesor(setHandler, what, proxy, key) : _R.__emptyFunction;
