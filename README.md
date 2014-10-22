@@ -28,6 +28,25 @@
       - [createClosure](#createclosure)
     - [makeGeneric](#makegeneric)
       - [Usage example](#usage-example)
+    - [wrapFunction](#wrapfunction)
+      - [before](#before)
+      - [after](#after)
+      - [Usage example](#usage-example-1)
+  - [Utility](#utility)
+    - [indirectEval](#indirecteval)
+  - [ES6 Reflect methods](#es6-reflect-methods)
+    - [construct](#construct)
+      - [Usage example](#usage-example-2)
+    - [has](#has)
+    - [apply](#apply)
+  - [Create and modify objects](#create-and-modify-objects)
+    - [Proxy](#proxy)
+      - [createProxy](#createproxy)
+      - [defaultSetter](#defaultsetter)
+      - [Usage example](#usage-example-3)
+    - [forbidPropertyNames](#forbidpropertynames)
+      - [Usage example](#usage-example-4)
+    - [addMagicLengthProperty](#addmagiclengthproperty)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -210,6 +229,43 @@ Changes method to function accepting `this` as first argument.
 ```javascript
 var slice = _R.makeGeneric([].slice);
 slice(arguments, 2, 7);
+```
+
+### wrapFunction
+```javascript
+_R.wrapFunction(func, before, after, [dataObject])
+```
+Returns new function. New function pseudocode:
+```javascript
+function newFunc() {
+var newArgs = before(func, this, null, arguments, dataObject) || arguments;
+var data = func.apply(this, newArgs)
+var afterResult = after(func, this, data, newArgs, dataObject);
+data = afterResult || data;
+return data;
+}
+```
+#### before
+```
+function before(func, thisArg, nothing /* null */, funcArguments, dataObject) {}
+````
+`before` function can return array or modify `funcArguments` object. It will be used by wraped function.
+#### after
+```
+function before(func, thisArg, funcResult, funcArguments, dataObject) {}
+```
+
+#### Usage example
+```javascript
+$ = jQuery = _R.wrapFunction(
+	jQuery,
+	function($,ignored1,ignored2,ignored3, data){
+		data.startTime = Date.now();
+	},
+	function($,ignored1,ignored2,ignored3, data) {
+		console.log('jQuery function took '+(Date.now() - data.startTime)+' miliseconds to run.');
+	},
+	{})
 ```
 
 ## Utility
