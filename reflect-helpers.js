@@ -66,7 +66,7 @@
      */
 
     function NativeFunctionSuppliedError() {
-        var ret = objectCreate(new Error());
+        var ret = objectCreate(new TypeError());
         ret.message = '_R does not support native or bound functions as arguments!';
         ret.name = 'NativeFunctionSuppliedError';
         return ret;
@@ -97,9 +97,14 @@
 
     function typeAssert(el, type, error) {
         var currType = typeof el;
-        error = error || new TypeError('Invalid typeof argument. Expected "' + type + '", encountered ' + currType);
-        if (currType !== type) {
-            throw error;
+        if (type.split('||').indexOf(type) === -1) {
+            throw (error || new TypeError('Invalid typeof argument. Expected "' + type + '", encountered ' + currType + ';'));
+        }
+    }
+    
+    function boolAssert(data, error) {
+        if (!data) {
+            throw error || new Error();
         }
     }
 
@@ -260,10 +265,8 @@
      */
 
     _R.getFunctionSourceCode = function getFunctionSourceCode(func) {
+        boolAssert(!_R.isBoundOrNativeFunction(func), new NativeFunctionSuppliedError());
         var source = Function.toString.call(func);
-        if (_R.isBoundOrNativeFunction(func)) {
-            throw new NativeFunctionSuppliedError();
-        }
         return source;
     };
 
@@ -361,6 +364,7 @@
      */
 
     _R.declosureFunction = function(func, transformer) {
+        boolAssert(_R.isBoundOrNativeFunction(func), new NativeFunctionSuppliedError());
         transformer = transformer || function(a) {
             return a;
         };
@@ -378,16 +382,12 @@
 
     _R.createNamedFunction = function createNamedFunction(name, restArgs) {
         name = name || 'anonymous';
-        if (!_R.isValidVariableName(name)) {
-            throw new NativeFunctionSuppliedError();
-        }
+        boolAssert(_R.isValidVariableName(name), new NativeFunctionSuppliedError());
         restArgs = Array.prototype.slice.call(arguments, 1);
         var tempFuncSource = _R.getFunctionSourceCode(Function.apply(null, restArgs));
         var newFuncSource;
         if (tempFuncSource.indexOf('function anonymous') === 0) {
-            tempFuncSource = tempFuncSource.split('\n');
-            tempFuncSource[0] = tempFuncSource.replace('anonymous', name + ' ');
-            newFuncSource = tempFuncSource.join('\n');
+            tempFuncSource = tempFuncSource.replace('anonymous', name + ' ');
         } else {
             newFuncSource = 'function ' + name + ' ' + tempFuncSource.slice(tempFuncSource.indexOf('('));
         }
@@ -437,27 +437,22 @@
 
     _R.Proxy = function Proxy(what, getHandler, setHandler) {
         var proxy = this instanceof Proxy ? this : objectCreate(Proxy.prototype);
-        if (!_R.__supportsObjectDefineProperties) {
-            throw new Error('_R.createProxy requires spec-compatible Object.defineProperty to work!');
-        }
-        if (typeof getHandler !== 'function') {
-            throw new Error('getHandler is not a function!');
-        }
-        if (arguments.length > 2 && typeof setHandler !== 'function') {
-            throw new Error('setHandler is not a function!');
+        boolAssert(_R.__supportsObjectDefineProperties, new Error('_R.createProxy requires spec-compatible Object.defineProperty to work!'));
+        typeAssert(getHandler, 'function', new TypeError('getHandler is not a function!'));
+        if (arguments.length > 2) {
+            typeAssert(setHandler, 'function', new TypeError('setHandler is not a function!'));
         }
         setHandler = setHandler || _R.Proxy.defaultSetter;
         var keys = removeDuplicatesFromStringArray(_R.getObjectPropertiesNames(what, true));
-        console.log(keys);
         var key, originalDescriptor, descriptor, accesorGet, accesorSet;
-        for (var i = 0; i < keys.length; i++) {
-            key = keys[i];
+        
+        keys.forEach(function (key, i) {
             descriptor = _R.__getDescriptor(what, key);
             accesorGet = _R.__createAccesor(getHandler, what, proxy, key);
             accesorSet = setHandler ? _R.__createAccesor(setHandler, what, proxy, key) : _R.__emptyFunction;
             _R.__injectAccesorsToDescriptor(descriptor, accesorGet, accesorSet);
             Object.defineProperty(proxy, key, descriptor);
-        }
+        });
         Object.seal(proxy);
         return this;
     };
@@ -566,12 +561,11 @@
      */
 
     _R.construct = function construct(target, args) {
-        if (typeof target !== 'function') {
-            throw new TypeError('_R.construct can be called only on function');
-        }
+        typeAssert(target, 'function', new TypeError('_R.construct can be called only on function'));
         args = [].slice.call(args);
-        var argsList = args.reduce(function(list,el,i){
-        	list.push('arguments[' + (i + 1) + ']')
+        var argsList = args.reduce(function(list,el,i) {
+        	list.push('arguments[' + (i + 1) + ']');
+        	return list;
         }, []);
         var source = 'return (new Constructor(' + argsList.join(', ') + '));';
         return Function('Constructor', source).apply(null, [target].concat(args));
