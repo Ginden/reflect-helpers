@@ -525,10 +525,18 @@
 	
 	_R.wrapFunction = function wrapFunction(func, before, after, commonData) {
 		typeAssert(func, 'function');
-		var ret = function () {
-			ret.__before && ret.__before(func, this, null, commonData, arguments);
-			var data = Function.apply.call(func, this, arguments);
-			ret.__after && ret.__after(func, this, data, commonData, arguments);
+		typeAssert(before, 'function');
+		var ret = function myFunc () {
+		    var data;
+			var newArgs = (ret.__before && ret.__before(func, this, null, arguments, commonData)) || arguments;
+			if (this instanceof myFunc) {
+			    data = _R.construct(func, newArgs)
+			}
+			else {
+			    data = Function.apply.call(func, this, newArgs);
+			}
+			var afterResult = ret.__after && ret.__after(func, this, data, newArgs, commonData);
+			data = (afterResult === undefined) ? data : afterResult;
 			return data;
 		};
 		ret.__before = before;
