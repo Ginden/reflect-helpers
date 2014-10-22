@@ -233,7 +233,7 @@
      */
 
     _R.indirectEval = function indirectEval(code, preparationCode) {
-        return Function('code', (preparationCode || '') +
+        return Function((preparationCode || '') +
             ';\n return eval(arguments[0])').call(null, code);
     };
 
@@ -364,7 +364,8 @@
         transformer = transformer || function(a) {
             return a;
         };
-        return _R.indirectEval('(' + transformer(_R.getFunctionSourceCode(func), func) + ')');
+        // _R.indirectEval cannot be used to lamba-lift closure to global scope due to IonMonkey limitations
+        return (1,eval)('(' + transformer(_R.getFunctionSourceCode(func), func) + ')'); 
     };
 
     /**
