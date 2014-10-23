@@ -314,9 +314,71 @@
 
         })();
 
+        (function() {
+            console.log('\n\tTesting _R.wrapFunction \n');
+            var t = _R.wrapFunction(function(){return [].reduce.call(arguments,function(a,b) {return a+b});}, function() {return [100,200,300];});
+            expect(t(1,1))
+                .toEqual(600)
+                .setTestName('Checking modyfing result by afterTransformer.')
+                .run()
+                .end();
+            t = _R.wrapFunction(function(){return 1;}, function() {}, function(){return 2;});
+            expect(t(1))
+                .toEqual(2)
+                .setTestName('Checking modyfing arguments by afterTransformer.')
+                .run()
+                .end();
+            t = _R.wrapFunction(Date, function() {}, function(){return 2;});
+            expect((new t).toString)
+                .toEqual((new Date()).toString)
+                .setTestName('Checking constructors with wrapped function.')
+                .run()
+                .end();
+
+        })();
+
+        (function() {
+            console.log('\n\tTesting _R.addMagicLengthProperty \n');
+            var t = {};
+            _R.addMagicLengthProperty(t, false);
+            
+            expect(t.length)
+                .toEqual(0)
+                .setTestName('Checking length of empty object.')
+                .run()
+                .end();
+            t[50] = 3;
+            expect(t.length)
+                .toEqual(51)
+                .setTestName('Checking length of empty array-like with holes.')
+                .run()
+                .end();
+            t.length = 30;
+            expect(t.hasOwnProperty('50'))
+                .toEqual(false)
+                .setTestName('Checking triming array-like by modifying .length .')
+                .run()
+                .end();
+            function F(){}
+            F.prototype = _R.addMagicLengthProperty({});
+            t = new F;
+            [].push.call(t, 1,2,3,4,5);
+            expect([].reduce.call(t, function(a,b) {return a+b;}))
+                .toEqual(15)
+                .setTestName('Checking using array\'s methods on object with enhanced prototype.')
+                .run()
+                .end();
+
+           
+        })();
+
+
 
 
         console.log('\n\n\tTESTS PASSED SUCCESFULLY!\n\n');
+
+
+
 
     } catch (e) {
         console.log(e);
