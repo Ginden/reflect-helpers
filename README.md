@@ -99,6 +99,9 @@ Automatic tests exist for:
 * `_R.getInternalClass`
 * `_R.indirectEval`
 * `_R.Proxy`
+* `_R.wrapFunction`
+* `_R.addMagicLengthProperty`
+
 
 ## _R settings
 
@@ -389,9 +392,11 @@ Object.prototype.get = function(){}; // throws TypeError
 ```javascript
 _R.addMagicLengthProperty(what [,readOnly=true]);
 ```
-Adds magic `length` property to `what` object.
+Adds magic `length` property to `what` object. It works almost as `length` property of arrays but it does not support length exceeding maximal index. 
 
 If `readOnly` argument is false, changes in `length` property will remove indexes over specified length.
 
 If `readOnly` arguments is false, `_R.addMagicLengthProperty` cannot be safely used with prototypes.
+
+
 
