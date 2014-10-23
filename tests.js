@@ -311,7 +311,6 @@
                 .setTestName('Checking if indirectEval modifies global scope. ')
                 .run()
                 .end();
-
         })();
 
         (function() {
