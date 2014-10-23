@@ -13,9 +13,9 @@
         // Browser globals (root is window)
         root._R = factory();
     }
-}(this, function() {
+}(this, function () {
     var _R = {};
-
+    
     _R.__supportsObjectDefineProperties = (function() {
         if (!Object.defineProperty) {
             return false;
@@ -29,9 +29,8 @@
         } catch (e) {
             return false;
         }
-    })();
+    }());
 
-    var getNaiveFunctionSourceCode = Function.call.bind(Function.toString);
 
     /*
      * SECTION: Settings
@@ -103,10 +102,13 @@
     }
     
     function boolAssert(data, error) {
-        if (!data) {
+        if (!!data === false) {
             throw error || new Error();
         }
     }
+
+    var getNaiveFunctionSourceCode = Function.call.bind(Function.toString);
+
 
     /*
      * SECTION: reference functions
@@ -119,7 +121,7 @@
 
     /*
      * SECTION: Semiprivate functions and data
-     * These functions aren't documented but they are exposed at user's risk
+     * These functions aren't documented but they can be used at user's risk
      */
 
     _R.__getDescriptor = function __getDescriptor(what, key) {
@@ -148,7 +150,7 @@
             Object.keys(this)
             .map(Number)
             .filter(function(el) {
-                return el > 0 && el === el;
+                return el >= 0 && el === el;
             })
         );
         if (last === -Infinity) {
@@ -192,7 +194,7 @@
 
     _R.isValidVariableName = function isValidVariableName(name) {
         try {
-            Function(name, '');
+            Function(name, 'return ('+name+')');
         } catch (e) {
             return false;
         }
@@ -208,7 +210,6 @@
      */
 
     _R.isBoundOrNativeFunction = function isBoundOrNativeFunction(func) {
-        
         var sourceCode = getNaiveFunctionSourceCode(func);
         if (sourceCode === getNaiveFunctionSourceCode(func.bind(null))) {
             return true;
@@ -516,7 +517,7 @@
             configurable: false,
             enumerable: false,
             get: _R.__magicLengthGetter,
-            set: readOnly ? _R.__emptyFunction : _R__magicLengthSetter
+            set: readOnly ? _R.__emptyFunction : _R.__magicLengthSetter
         });
         return what;
     };
@@ -529,14 +530,14 @@
 		typeAssert(before, 'function');
 		var ret = function myFunc () {
 		    var data;
-			var newArgs = (ret.__before && ret.__before(func, this, null, arguments, commonData)) || arguments;
+			var newArgs = before(func, this, null, arguments, commonData) || arguments;
 			if (this instanceof myFunc) {
 			    data = _R.construct(func, newArgs)
 			}
 			else {
 			    data = Function.apply.call(func, this, newArgs);
 			}
-			var afterResult = ret.__after && ret.__after(func, this, data, newArgs, commonData);
+			var afterResult = (typeof after === 'function' ? after(func, this, data, newArgs, commonData) : undefined);
 			data = (afterResult === undefined) ? data : afterResult;
 			return data;
 		};
