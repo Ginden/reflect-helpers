@@ -1,6 +1,6 @@
 {
   "name": "reflect-r",
-  "version": "0.7.5",
+  "version": "0.8.0",
   "description": "_R is a powerful reflection library with support for lamba-lifting, modyfing code flow in fly and timing functions.",
   "main": "reflect-helpers.js",
   "scripts": {
@@ -14,7 +14,8 @@
     "reflection",
     "es6",
     "reflect",
-    "_R"
+    "_R",
+    "lamba lifting"
   ],
   "author": "Michał \"Ginden\" Wadas",
   "license": "MIT",
