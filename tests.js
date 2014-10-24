@@ -322,9 +322,9 @@
                 .run()
                 .end();
             t = _R.wrapFunction(function(){return 1;}, function() {}, function(){return 2;});
-            expect(t(1))
+            expect(t())
                 .toEqual(2)
-                .setTestName('Checking modyfing arguments by afterTransformer.')
+                .setTestName('Checking modyfing result by afterTransformer.')
                 .run()
                 .end();
             t = _R.wrapFunction(Date, function() {}, function(){return 2;});
