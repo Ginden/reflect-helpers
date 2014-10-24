@@ -241,21 +241,27 @@ _R.wrapFunction(func, before, after, [dataObject])
 Returns new function. New function pseudocode:
 ```javascript
 function newFunc() {
-var newArgs = before(func, this, null, arguments, dataObject) || arguments;
-var data = func.apply(this, newArgs)
-var afterResult = after(func, this, data, newArgs, dataObject);
+var error = null;
+var data = null;
+var newArgs = before(func, this, arguments, dataObject) || arguments;
+try {
+data = func.applyOrConstruct(this, newArgs);
+} catch(e){
+error = e;
+}
+var afterResult = after(func, this, error, data, newArgs, dataObject);
 data = afterResult || data;
 return data;
 }
 ```
 #### before
 ```
-function before(func, thisArg, nothing /* null */, funcArguments, dataObject) {}
+function before(func, thisArg, funcArguments, dataObject) {}
 ````
 `before` function can return array or modify `funcArguments` object. It will be used by wraped function.
 #### after
 ```
-function before(func, thisArg, funcResult, funcArguments, dataObject) {}
+function after(func, thisArg, funcError, funcResult, funcArguments, dataObject) {}
 ```
 
 #### Usage example
