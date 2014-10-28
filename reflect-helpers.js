@@ -1,21 +1,24 @@
 /** @module reflect-helpers */
 
 ( function(root, factory) {
+		/* istanbul ignore if */
         if ( typeof define === 'function' && define.amd) {
             // AMD. Register as an anonymous module.
             define([], factory);
-        } else if ( typeof exports === 'object') {
+        } /* istanbul ignore else */ else if ( typeof exports === 'object') {
             // Node. Does not work with strict CommonJS, but
             // only CommonJS-like environments that support module.exports,
             // like Node.
             module.exports = factory();
-        } else {
+        } /* istanbul ignore else */ else {
             // Browser globals (root is window)
             root._R = factory();
         }
     }(this, function() {
         var _R = {};
-        //_R.global = (1,eval)('this');
+        _R.global = (1,eval)('this');
+        
+        /* istanbul ignore next */
         _R.__supportsObjectDefineProperties = ( function() {
                 if (!Object.defineProperty) {
                     return false;
@@ -47,8 +50,10 @@
          * @param {integer|string} directive - directive to be used
          * @returns {boolean}
          */
-
+		
+		
         _R.$setDirective = function(directive) {
+        	/* instabul ignore else */
             if ( typeof directive === 'number') {
                 _R.__directive = JSON.stringify(_R.__directives[directive] || '');
             } else {
@@ -73,7 +78,7 @@
         function objectCreate(proto) {
             function F() {
             }
-
+			/* istanbul ignore else */
             if (Object.create) {
                 return Object.create(proto);
             } else {
@@ -94,14 +99,15 @@
             }
             return ret;
         }
-
+		/* istanbul ignore next */
         function typeAssert(el, type, error) {
             var currType = typeof el;
             if (type.split('||').indexOf(type) === -1) {
                 throw (error || new TypeError('Invalid typeof argument. Expected "' + type + '", encountered ' + currType + ';'));
             }
         }
-
+		
+		/* istanbul ignore next */
         function boolAssert(data, error) {
             if (!!data === false) {
                 throw error || new Error();
@@ -113,11 +119,11 @@
         /*
          * SECTION: reference functions
          */
-
-        _R.__boundFunction = (function a() {
-        }).bind(null);
-
+		/* istanbul ignore next */
+        _R.__boundFunction = (function bound() {}).bind(null);
+		/* istanbul ignore next */
         _R.__emptyFunction = Function();
+        /* istanbul ignore next */
         _R.__emptySetter = Function('val', '');
 
         /*
@@ -212,6 +218,7 @@
                 return true;
             }
             // Old Safari
+            /* istanbul ignore if */
             if (sourceCode === '[function]') {
                 return true;
             }
@@ -273,7 +280,6 @@
          * @method
          * @param what - Object or primitive to be inspected
          */
-
         _R.getInternalClass = function(what) {
             return Object.prototype.toString.call(what).match(/^\[object\s(.*)\]$/)[1];
         };
@@ -288,7 +294,7 @@
          */
 
         _R.getObjectPrototype = function getObjectPrototype(what) {
-            if ( typeof what !== 'object' || typeof what !== 'function') {
+            if (typeof what !== 'object' || typeof what !== 'function' || what == null) {
                 return null;
             }
             if (Object.getPrototypeOf) {
@@ -361,8 +367,7 @@
 
         _R.declosureFunction = function(func, transformer) {
             boolAssert(_R.isBoundOrNativeFunction(func), new NativeFunctionSuppliedError());
-            transformer = transformer ||
-            function(a) {
+            transformer = transformer || function(a) {
                 return a;
             };
             // _R.indirectEval cannot be used to lamba-lift closure to global scope due to IonMonkey limitations
@@ -400,7 +405,7 @@
          * @param {string} [name] - name of new function (defaults to 'anonymous' (will shadow arguments from context))
          * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
          */
-
+		
         _R.createClosure = function createClosure(func, context, name) {
             context = context || {};
             name = _R.isValidVariableName(name) ? name : 'anonymous';
