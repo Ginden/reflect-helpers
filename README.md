@@ -101,7 +101,9 @@ Automatic tests exist for:
 * `_R.Proxy`
 * `_R.wrapFunction`
 * `_R.addMagicLengthProperty`
-
+* `_R.getPrototypeOf`
+* `_R.makeGeneric`
+It\'s 79.82% test coverage (istanbul report). 
 
 ## _R settings
 
