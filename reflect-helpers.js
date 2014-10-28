@@ -294,10 +294,13 @@
          */
 
         _R.getObjectPrototype = function getObjectPrototype(what) {
-            if (typeof what !== 'object' || typeof what !== 'function' || what == null) {
+            if (typeof what !== 'object' && typeof what !== 'function') {
                 return null;
             }
-            if (Object.getPrototypeOf) {
+            else if (what === null || what === undefined) {
+            	return null;
+            }
+            else if (Object.getPrototypeOf) {
                 return Object.getPrototypeOf(what);
             } else if (( {}).__proto__) {
                 return what.__proto__;
