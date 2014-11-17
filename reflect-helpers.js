@@ -253,8 +253,16 @@
          * @param {function} func
          * @returns {function}
          */
-        _R.makeGeneric = function demethodify(func) {
+        _R.makeGeneric = _R.demethodify = function demethodify(func) {
             return Function.call.bind(func);
+        };
+
+        _R.makeMethod = _R.methodify = function methodify(func) {
+            function method(){
+                return Function.prototype.apply.call(func, null, [this].concat([].slice.call(arguments)));
+            };
+            method.displayName = func.displayName || func.name;
+            return method;
         };
 
         /*
