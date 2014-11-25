@@ -672,7 +672,7 @@
                 startCallback(/* arguments: TODO */);
                 var callbacksObject = funcArgs[funcArgs.length-1];
                 if (_R.has(callbacksObject, 'success'))
-
+                    callbacksObject.success = _R.wrapFunction(callbacksObject.success, defBef, defAfter)
             }, commonData);
 
         };
