@@ -354,7 +354,7 @@
                 keys.push.apply(keys, Object.getOwnPropertyNames(what));
             } else {
                 for (var key in what) {
-                    if (Object.hasOwnProperty.call(what, key)) {
+                    if (_R.has(what, key)) {
                         keys.push(key);
                     }
                 }
@@ -424,7 +424,7 @@
             var argumentsValues = [];
             var key, sourceCode;
             for (key in context) {
-                if (Object.hasOwnProperty.call(context, key) && _R.isValidVariableName(key)) {
+                if (_R.has(context, key) && _R.isValidVariableName(key)) {
                     argumentsNames.push(key);
                     argumentsValues.push(context[key])
                 }
@@ -513,7 +513,7 @@
                 });
             }
         };
-
+        
         _R.addMagicLengthProperty = function addMagicLengthProperty(what, readOnly) {
             if (arguments.length < 2) {
                 readOnly = true;
@@ -540,25 +540,39 @@
                     } else {
                         data = Function.apply.call(func, this, newArgs);
                     }
-                } catch(e) {
+                } catch (e) {
                     error = e;
                 }
-                var afterResult = ( typeof after === 'function' ? after(func, this, error, data, newArgs, commonData) : undefined);
+                var afterResult = (typeof after === 'function' ? after(func, this, error, data, newArgs, commonData) : undefined);
                 data = (afterResult === undefined) ? data : afterResult;
                 if (error) {
                     throw error;
                 }
                 return data;
             };
-            ret.__before = before;
-            ret.__after = after;
             var properties = _R.getObjectPropertiesNames(func);
-            properties.reduce(function(newFunc, el) {
+            properties.reduce(function (newFunc, el) {
+                newFunc[el] = func[el];
+                return newFunc;
+            }, ret);
+            return ret;
+        };
+
+        _R.wrapMethodBefore = function wrapMethodBefore(func, before, commonData) {
+            typeAssert(func, 'function');
+            typeAssert(before, 'function');
+            var ret = function myFunc() {
+                var newArgs = before(func, this, arguments, commonData) || arguments;
+                return Function.apply.call(func, this, newArgs);
+            };
+            var properties = _R.getObjectPropertiesNames(func);
+            properties.reduce(function (newFunc, el) {
                 newFunc[el] = func[el];
                 return newFunc;
             }, ret);
             return ret;
         }
+
         /*
         * Reflect polyfill
         */
@@ -572,17 +586,27 @@
          * @returns {Object}
          */
 
-        _R.construct = function construct(target, args) {
-            typeAssert(target, 'function', new TypeError('_R.construct can be called only on function'));
-            args = [].slice.call(args);
-            var argsList = args.reduce(function(list, el, i) {
-                list.push('arguments[' + (i + 1) + ']');
-                return list;
-            }, []);
-            var source = 'return (new Constructor(' + argsList.join(', ') + '));';
-            return Function('Constructor', source).apply(null, [target].concat(args));
-        };
+        var dynamicConstructorsCache = objectCreate(null);
 
+        _R.construct = function construct(target, args) {
+            typeAssert(target, 'function', new TypeError('_R.construct can be called only on function!'));
+             
+            args = [].slice.call(args);
+            var len = args.length;
+            if (_R.has(dynamicConstructorsCache, len)) {
+                func = dynamicConstructorsCache[len];
+            }
+            else {
+                var argsList = args.reduce(function (list, el, i) {
+                    list.push('arguments[' + (i + 1) + ']');
+                    return list;
+                }, []);
+                var source = 'return (new Constructor(' + argsList.join(', ') + '));';
+                func = Function('Constructor', source);
+            }
+            return func.apply(null, [target].concat(args));
+        };
+        
         /**
          * Applies function with specified arguments and this value
          * Follows spec of ES6 Reflect.apply
@@ -636,6 +660,24 @@
             var currentTime = dataObject.time();
             dataObject.log[funcArguments.counter].end = currentTime;
         };
+
+        /**
+        * Provides high perfomance functions developed for methods using Node.js style callbacks.
+        */
+        
+        _R.wrapNodeAsync = function (obj, name, startCallback, endCallback, commonData) {
+            typeAssert(obj, 'object|function', new TypeError('_R.wrapNodeAsync target is not an object.'));
+            typeAssert(obj, 'object|function', new TypeError('_R.wrapNodeAsync target["'+name+'"] is not a function.'));
+            obj[name] = _R.wrapMethodBefore(obj[name], function (func, thisArg, funcArgs) {
+                startCallback(/* arguments: TODO */);
+                var callbacksObject = funcArgs[funcArgs.length-1];
+                if (_R.has(callbacksObject, 'success'))
+
+            }, commonData);
+
+        };
+
+
 
         _R.toString = function() {
             return '[Object _R]';
