@@ -16,8 +16,11 @@
         }
     }(this, function() {
         var _R = {};
-        _R.global = (1,eval)('this');
-        
+        try {
+            _R.global = Function('return this;')();
+        } catch (e) {
+            throw new Error('Most of _R functions will not work under CSP - execution prevented.');
+        }
         /* istanbul ignore next */
         _R.__supportsObjectDefineProperties = ( function() {
                 if (!Object.defineProperty) {
@@ -50,8 +53,8 @@
          * @param {integer|string} directive - directive to be used
          * @returns {boolean}
          */
-		
-		
+
+
         _R.$setDirective = function(directive) {
         	/* instabul ignore else */
             if ( typeof directive === 'number') {
@@ -106,7 +109,7 @@
                 throw (error || new TypeError('Invalid typeof argument. Expected "' + type + '", encountered ' + currType + ';'));
             }
         }
-		
+
 		/* istanbul ignore next */
         function boolAssert(data, error) {
             if (!!data === false) {
@@ -182,6 +185,8 @@
             return val;
         };
 
+        _R.__noConflictPrefix = '__'+Math.random().toString(36).slice(2)+'__';
+
         /*
         * SECTION: TESTS AND CHECKS
         */
@@ -192,10 +197,18 @@
          *   it would be 11,236 characters long".
          * @method
          * @param {string} name - string to be tested
+         * @param {Boolean} safe - should "contencation safety" enforced (can you safely construct source code using this string)?
          * @returns {boolean}
          */
 
-        _R.isValidVariableName = function isValidVariableName(name) {
+        _R.isValidVariableName = function isValidVariableName(name, safe) {
+            if (typeof name !== 'string') return false;
+            // because some characters aren't correctly
+            var illegalCharacters = '/*\\\n@.'.split('');
+            for(var i = 0; i < illegalCharacters.length; i++) {
+                if (name.indexOf(illegalCharacters[i]) !== -1)
+                    return false;
+            }
             try {
                 Function(name, 'return (' + name + ')');
             } catch (e) {
@@ -409,14 +422,15 @@
 
         /**
          * Redefines function in context of given object;
-         * Default function name is
+         * Default function name is 'anonymous'
          * @method
          * @param {function} func - function name (exists in function scope, shouldn't be confused with function.name property)
          * @param {Object} [context] - context of new function
          * @param {string} [name] - name of new function (defaults to 'anonymous' (will shadow arguments from context))
          * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
+         * @returns {Function} Newly created function.
          */
-		
+
         _R.createClosure = function createClosure(func, context, name) {
             context = context || {};
             name = _R.isValidVariableName(name) ? name : 'anonymous';
@@ -432,6 +446,53 @@
             sourceCode = _R.__directive + ';\n var ' + name + '= (' + _R.getFunctionSourceCode(func) + '); return ' + name + ';';
             return Function.apply(null, argumentsNames.concat(sourceCode)).apply(null, argumentsValues);
         };
+
+        /**
+         * Redefines function in context of given object and allows scope manipulations;
+         * Default function name is 'anonymous';
+         * Recursion IS NOT guaranteed to work unless function is reffered by `name` property.
+         * @method
+         * @param {function} func - function name (exists in function scope, shouldn't be confused with function.name property)
+         * @param {Object} [context] - context of new function
+         * @param {string} [funcName] - name of new function (defaults to 'anonymous' (will shadow arguments from context))
+         * @throws {NativeFunctionSuppliedError} for bound functions and native code functions
+         * @returns {Object} Object with two properties - `func` and `scope` object.
+         */
+
+
+        _R.createMagicClosure = function createClosure(func, context, funcName) {
+            context = context || {};
+            funcName = _R.isValidVariableName(funcName, true) ? funcName : 'anonymous';
+            var argumentsNames = [];
+            var scopeVariableName = _R.__noConflictPrefix+'scope';
+            var scopeDerName = _R.__noConflictPrefix+'retScope';
+            var key, sourceCode;
+            var scopeObject = Object.create(null);
+            for (key in context) {
+                if (_R.has(context, key) && _R.isValidVariableName(key, true)) {
+                    argumentsNames.push(key);
+                    scopeObject[key] = context[key];
+                }
+            }
+            var sourceCode = 'var '+scopeDerName+' = {};';
+
+            argumentsNames.forEach(function(name){
+                sourceCode += 'var '+name+' = '+scopeVariableName+'['+JSON.stringify(name)+'];\n';
+            });
+            argumentsNames.forEach(function(name){
+                sourceCode += 'Object.defineProperty('+scopeVariableName+', '+JSON.stringify(name)+', {\
+                    get: function() { return '+name+'; },\
+                    set: function(val) {return ('+name+' = val);}\
+                });\n'
+            });
+            sourceCode += 'var '+funcName+' = ('+ _R.getFunctionSourceCode(func)+');';
+
+
+            sourceCode += '\n return {scope: '+scopeVariableName+', func: '+funcName+'};';
+            return Function(scopeVariableName, sourceCode)(scopeObject);
+        };
+
+
 
         /*
         * SECTION: Modify and create objects
@@ -513,7 +574,15 @@
                 });
             }
         };
-        
+
+
+        /**
+         * Add magical length property to an object and returns it.
+         * @method
+         * @param {Object} target
+         * @param {Boolean} readOnly
+         * @returns {*}
+         */
         _R.addMagicLengthProperty = function addMagicLengthProperty(what, readOnly) {
             if (arguments.length < 2) {
                 readOnly = true;
@@ -571,7 +640,7 @@
                 return newFunc;
             }, ret);
             return ret;
-        }
+        };
 
         /*
         * Reflect polyfill
@@ -590,7 +659,7 @@
 
         _R.construct = function construct(target, args) {
             typeAssert(target, 'function', new TypeError('_R.construct can be called only on function!'));
-             
+
             args = [].slice.call(args);
             var len = args.length;
             if (_R.has(dynamicConstructorsCache, len)) {
@@ -606,7 +675,6 @@
             }
             return func.apply(null, [target].concat(args));
         };
-        
         /**
          * Applies function with specified arguments and this value
          * Follows spec of ES6 Reflect.apply
@@ -625,13 +693,13 @@
          * Checks if target has a property key
          * Follows spec of ES6 Reflect.has
          * @method
-         * @param {function} target
+         * @param {*} target
          * @param {string|symbol} key
          * @returns {*}
          */
 
         _R.has = function ReflectHas(target, key) {
-            return Object.prototype.hasOwnProperty.call(target, key);
+            return {}.hasOwnProperty.call(target, key);
         };
 
         /*
@@ -664,7 +732,7 @@
         /**
         * Provides high perfomance functions developed for methods using Node.js style callbacks.
         */
-        
+
         _R.wrapNodeAsync = function (obj, name, startCallback, endCallback, commonData) {
             typeAssert(obj, 'object|function', new TypeError('_R.wrapNodeAsync target is not an object.'));
             typeAssert(obj, 'object|function', new TypeError('_R.wrapNodeAsync target["'+name+'"] is not a function.'));
