@@ -74,174 +74,6 @@ function ignore() {
         }
 
         expect.log = [];
-        (function () {
-            console.log('\n\tTesting _R.isValidVariableName \n');
-            var varsIdentifiers = [
-                ['a', true],
-                ['b', true],
-                ['c', true],
-                ['d', true],
-                ['var', false],
-                ['any way to do this is valid', false],
-                [{
-                    oh: 'hai'
-                },
-                 false
-                ],
-                [{
-                    toString: function () {
-                        return 'fromToString';
-                    }
-                },
-                 true
-                ],
-                [4, false],
-                ['4', false],
-                [false, false],
-                ['undefined', true],
-                ['null', false],
-                [null, false],
-                ['"wow"', false],
-                ['function', false],
-                ['//wow', false, true],
-                ['/* wow */ a', true],
-                ['/* wow a', false, true],
-            ];
-            var id, expectedVal, implementationDependant, test;
-            for (var i = 0; i < varsIdentifiers.length; i++) {
-                id = varsIdentifiers[i][0];
-                expectedVal = varsIdentifiers[i][1];
-                implementationDependant = !!(varsIdentifiers[i][2]);
-                expect(
-                    _R.isValidVariableName(id)
-                )
-                    .toEqual(
-                    expectedVal
-                )
-                    .setTestName('Is "' + id + '" valid variable name?')
-                    .run()
-                    .end(implementationDependant);
-            }
-        })();
-
-        (function () {
-            console.log('\n\tTesting _R.isBoundOrNativeFunction \n');
-            var functions = [
-                [
-                    function a() {
-                    },
-                    false
-                ],
-                [(function b() {
-                })
-                     .bind(null), true
-                ],
-                [console.log, true, true],
-                [Date, true],
-                [Date.bind(null), true],
-                [setTimeout, true, true],
-                [Date, true],
-                [(function () {
-                    /*
-                     [native code]
-                     */
-                }), false],
-                [(function a() {
-                    a.toString = Function.toString.bind(setTimeout);
-                    return a;
-                })(), false],
-                [eval, true]
-            ];
-            var prepare;
-            try {
-                prepare = [eval('() => global'), false];
-                functions.push(prepare);
-                prepare = [eval('(a) => a'), false];
-                functions.push(prepare)
-                prepare = [eval('(() => global).bind(null)'), true];
-                functions.push(prepare)
-            } catch (e) {
-                console.log('\n\tThis implementation does not support arrow functions. Ommiting tests.\n');
-            }
-            var func, expectedVal, implementationDependant, test;
-            for (var i = 0; i < functions.length; i++) {
-                func = functions[i][0];
-                expectedVal = functions[i][1];
-                implementationDependant = !!(functions[i][2]);
-                expect(
-                    _R.isBoundOrNativeFunction(func)
-                )
-                    .toEqual(
-                    expectedVal
-                )
-                    .setTestName('Is function ("' + (func.name || i) + '") native or bound?')
-                    .run()
-                    .end(implementationDependant);
-            }
-        })();
-
-        (function () {
-            console.log('\n\tTesting _R.getFunctionSourceCode \n');
-            var functions = [
-                [
-                    function a() {
-                    }, 'function a() {}'
-                ],
-            ];
-            var func, expectedVal, implementationDependant, test;
-            for (var i = 0; i < functions.length; i++) {
-                func = functions[i][0];
-                expectedVal = functions[i][1];
-                implementationDependant = !!(functions[i][2]);
-                expect(
-                    _R.getFunctionSourceCode(func)
-                )
-                    .toEqual(
-                    expectedVal
-                )
-                    .setTestName('Can function ("' + (func.name || i) + '") code be retrieved?')
-                    .run()
-                    .end(implementationDependant);
-            }
-        })();
-
-        (function () {
-            console.log('\n\tTesting _R.getInternalClass \n');
-            var values = [
-                ['abcd', 'String'],
-                [5, 'Number'],
-                [null, 'Null', true],
-                [undefined, 'Undefined', true],
-                [Function(), 'Function'],
-                [this, 'global', true],
-                [{}, 'Object'],
-                [
-                    [], 'Array'
-                ],
-                [Infinity, 'Number'],
-                [NaN, 'Number'],
-                [true, 'Boolean'],
-                [new String('oh hai'), 'String'],
-            ];
-            if (typeof Symbol !== 'undefined') {
-                values.push([Symbol(), 'Symbol', true]);
-            }
-            var func, expectedVal, implementationDependant, test;
-            for (var i = 0; i < values.length; i++) {
-                func = values[i][0];
-                expectedVal = values[i][1];
-                implementationDependant = !!(values[i][2]);
-                expect(
-                    _R.getInternalClass(func)
-                )
-                    .toEqual(
-                    expectedVal
-                )
-                    .setTestName('Is element ' + i + ' [[Class]] equal to ' + expectedVal + '?')
-                    .run()
-                    .end(implementationDependant);
-            }
-        })();
 
         (function () {
             console.log('\n\tTesting _R.createProxy \n');
@@ -264,14 +96,14 @@ function ignore() {
                     if (propertyName === 'area') {
                         return proxyObject.radius * proxyObject.radius * Math.PI;
                     }
-                }
+                };
                 Circle.setter = function circleSetter(originalObject, proxyObject, propertyName, propertyValue) {
                     if (propertyName !== 'radius') {
                         throw Error('You can not modify anything in circle except radius');
                     } else {
                         return originalObject.radius = propertyValue;
                     }
-                }
+                };
 
                 var k = new Circle(5);
                 expect(k.radius * 2)
@@ -491,69 +323,4 @@ function ignore() {
 
 }
 
-var _R = typeof require === 'function' ? require('../index.js') : (typeof window !== 'undefined' ? window._R : null);
 
-
-describe('_R.isValidVariableName', function () {
-    it('accepts "a" as argument name', function () {
-        expect(_R.isValidVariableName("a")).toBe(true);
-    });
-    it('accepts "b" as argument name', function () {
-        expect(_R.isValidVariableName("b")).toBe(true);
-    });
-    it('accepts "c" as argument name', function () {
-        expect(_R.isValidVariableName("c")).toBe(true);
-    });
-    it('accepts "d" as argument name', function () {
-        expect(_R.isValidVariableName("d")).toBe(true);
-    });
-    it('rejects "var" as argument name', function () {
-        expect(_R.isValidVariableName("var")).toBe(false);
-    });
-    it('rejects "any way to do this is valid" as argument name', function () {
-        expect(_R.isValidVariableName("any way to do this is valid")).toBe(false);
-    });
-    it('rejects ({oh:"hai"}) as argument name', function () {
-        expect(_R.isValidVariableName(({oh: "hai"}))).toBe(false);
-    });
-    it('accepts ({toString:(function () {    return \'fromToString\';})}) as argument name', function () {
-        expect(_R.isValidVariableName(({
-            toString: (function () {
-                return 'fromToString';
-            })
-        }))).toBe(true);
-    });
-    it('rejects 4 as argument name', function () {
-        expect(_R.isValidVariableName(4)).toBe(false);
-    });
-    it('rejects "4" as argument name', function () {
-        expect(_R.isValidVariableName("4")).toBe(false);
-    });
-    it('rejects false as argument name', function () {
-        expect(_R.isValidVariableName(false)).toBe(false);
-    });
-    it('accepts "undefined" as argument name', function () {
-        expect(_R.isValidVariableName("undefined")).toBe(true);
-    });
-    it('rejects "null" as argument name', function () {
-        expect(_R.isValidVariableName("null")).toBe(false);
-    });
-    it('rejects null as argument name', function () {
-        expect(_R.isValidVariableName(null)).toBe(false);
-    });
-    it('rejects "\"wow\"" as argument name', function () {
-        expect(_R.isValidVariableName("\"wow\"")).toBe(false);
-    });
-    it('rejects "function" as argument name', function () {
-        expect(_R.isValidVariableName("function")).toBe(false);
-    });
-    it('rejects "//wow" as argument name', function () {
-        expect(_R.isValidVariableName("//wow")).toBe(false);
-    });
-    it('accepts "/* wow */ a" as argument name', function () {
-        expect(_R.isValidVariableName("/* wow */ a")).toBe(true);
-    });
-    it('rejects "/* wow a" as argument name', function () {
-        expect(_R.isValidVariableName("/* wow a")).toBe(false);
-    });
-});

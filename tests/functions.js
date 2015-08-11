@@ -2,7 +2,7 @@
  * Created by michal.wadas on 2015-08-11.
  */
 
-var _R = typeof require === 'function' ? require('../index.js') : (typeof window !== 'undefined' ? window._R : null);
+var _R = typeof require === 'function' ? require('./lib/reflect-helpers.js') : (typeof window !== 'undefined' ? window._R : null);
 
 
 describe('_R.isBoundOrNativeFunction', function () {
