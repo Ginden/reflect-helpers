@@ -21,3 +21,4 @@ build/Release
 node_modules
 dist
 *.exe
+tests/lib
