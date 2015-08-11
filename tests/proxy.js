@@ -14,7 +14,7 @@ describe('_R.createProxy - ', function () {
             return _R.createProxy(this, Circle.getter, Circle.setter);
         }
 
-        Circle.getter = function circleGetter(originalObject, propertyName, proxy) {
+        Circle.getter = function circleGetter(originalObject, propertyName, proxyObject) {
             if (propertyName === 'radius') {
                 return originalObject.radius;
             }
@@ -33,6 +33,10 @@ describe('_R.createProxy - ', function () {
             }
         };
         var k = new Circle(5);
+        console.log(k, Object.keys(k).map(
+            function(kk){
+                return [kk, ''+Object.getOwnPropertyDescriptor(k, kk).get]
+            }));
         expect(k.radius * 2)
             .toEqual(k.diameter);
 
