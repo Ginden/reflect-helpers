@@ -46,3 +46,9 @@ describe('_R.getPrototypesChain', function () {
     });
 });
 
+describe('String(_R)', function(){
+    it('works as expected', function(){
+        expect(_R + '')
+            .toEqual('[Object _R]')
+    });
+});
