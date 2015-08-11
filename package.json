@@ -1,10 +1,10 @@
 {
   "name": "reflect-r",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "_R is a powerful reflection library with support for lamba-lifting, modyfing code flow in fly and timing functions.",
   "main": "reflect-helpers.js",
   "scripts": {
-    "test": "node tests.js"
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
