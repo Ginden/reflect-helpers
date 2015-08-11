@@ -76,129 +76,6 @@ function ignore() {
         expect.log = [];
 
         (function () {
-            console.log('\n\tTesting _R.createProxy \n');
-
-            (function () {
-                function Circle(r) {
-                    this.diameter = undefined; // property have to exist
-                    this.area = undefined; // property have to exist
-                    this.radius = r;
-                    return _R.createProxy(this, Circle.getter, Circle.setter);
-                }
-
-                Circle.getter = function circleGetter(originalObject, proxyObject, propertyName) {
-                    if (propertyName === 'radius') {
-                        return originalObject.radius;
-                    }
-                    if (propertyName === 'diameter') {
-                        return proxyObject.radius * 2;
-                    }
-                    if (propertyName === 'area') {
-                        return proxyObject.radius * proxyObject.radius * Math.PI;
-                    }
-                };
-                Circle.setter = function circleSetter(originalObject, proxyObject, propertyName, propertyValue) {
-                    if (propertyName !== 'radius') {
-                        throw Error('You can not modify anything in circle except radius');
-                    } else {
-                        return originalObject.radius = propertyValue;
-                    }
-                };
-
-                var k = new Circle(5);
-                expect(k.radius * 2)
-                    .toEqual(k.diameter)
-                    .setTestName('k.radius *2 === k.diameter')
-                    .run()
-                    .end(); // true
-                var test = expect(k.diameter);
-                try {
-                    k.diameter = 7; // Error: You can not modify anything in circle except radius
-                    nonexistingVariableName;
-                } catch (e) {
-                    if (e.message === 'You can not modify anything in circle except radius') {
-                        test.toEqual(10)
-                            .setTestName('was k.diameter modified? ')
-                            .run()
-                            .end();
-                    } else {
-                        throw new Error('Modification of k.diameter did not throw error. WTF is wrong with this engine?');
-                    }
-                }
-                k.oh = 'hai'; // Error in strict mode; Does nothing outside of strict mode
-                k.radius = 11; // works
-                expect(k.diameter)
-                    .toEqual(22)
-                    .setTestName('k.diameter === 22')
-                    .run()
-                    .end();
-            })();
-
-        })();
-
-        (function () {
-            console.log('\n\tTesting _R.indirectEval \n');
-            expect(_R.indirectEval('"wow"'))
-                .toEqual("wow")
-                .setTestName('Returning values from indirectEval. ')
-                .run()
-                .end();
-            expect(_R.indirectEval('this'))
-                .toEqual(global)
-                .setTestName('Checking this in indirectEval. Should be global object. ')
-                .run()
-                .end();
-            expect(_R.indirectEval('2+3'))
-                .toEqual(5)
-                .setTestName('Checking simple expressions in indirectEval. ')
-                .run()
-                .end()
-            _R.indirectEval('var a = 3;')
-            expect(global.a)
-                .toEqual(undefined)
-                .setTestName('Checking if indirectEval modifies global scope. ')
-                .run()
-                .end();
-        })();
-
-        (function () {
-            console.log('\n\tTesting _R.wrapFunction \n');
-            var t = _R.wrapFunction(function () {
-                return [].reduce.call(arguments, function (a, b) {
-                    return a + b
-                });
-            }, function () {
-                return [100, 200, 300];
-            });
-            expect(t(1, 1))
-                .toEqual(600)
-                .setTestName('Checking modyfing result by afterTransformer.')
-                .run()
-                .end();
-            t = _R.wrapFunction(function () {
-                return 1;
-            }, function () {
-            }, function () {
-                return 2;
-            });
-            expect(t())
-                .toEqual(2)
-                .setTestName('Checking modyfing result by afterTransformer.')
-                .run()
-                .end();
-            t = _R.wrapFunction(Date, function () {
-            }, function () {
-                return 2;
-            });
-            expect((new t).toString)
-                .toEqual((new Date()).toString)
-                .setTestName('Checking constructors with wrapped function.')
-                .run()
-                .end();
-
-        })();
-
-        (function () {
             console.log('\n\tTesting _R.addMagicLengthProperty \n');
             var t = {};
             _R.addMagicLengthProperty(t, false);
@@ -240,11 +117,7 @@ function ignore() {
         (function () {
             console.log('\n\tTesting _R.toString \n');
 
-            expect(_R + '')
-                .toEqual('[Object _R]')
-                .setTestName('Checking _R.toString.')
-                .run()
-                .end();
+
 
         })();
 
@@ -277,36 +150,6 @@ function ignore() {
 
         })();
 
-        (function () {
-            console.log('\n\tTesting _R.getObjectPrototype \n');
-
-            expect(_R.getObjectPrototype({}))
-                .toEqual(Object.prototype)
-                .setTestName('Checking _R.getObjectPrototype - object. ')
-                .run()
-                .end();
-            expect(_R.getObjectPrototype([]))
-                .toEqual(Array.prototype)
-                .setTestName('Checking _R.getObjectPrototype - array')
-                .run()
-                .end();
-            expect(_R.getObjectPrototype(''))
-                .toEqual(null)
-                .setTestName('Checking _R.getObjectPrototype - string.')
-                .run()
-                .end();
-            expect(_R.getObjectPrototype(5))
-                .toEqual(null)
-                .setTestName('Checking _R.getObjectPrototype - number.')
-                .run()
-                .end();
-            expect(_R.getObjectPrototype(null))
-                .toEqual(null)
-                .setTestName('Checking _R.getObjectPrototype - null.')
-                .run()
-                .end();
-
-        })();
 
 
         if (errors.length) {
@@ -316,10 +159,6 @@ function ignore() {
             console.log('\n\n\tTESTS PASSED SUCCESFULLY!\n\n');
         }
     })(typeof _R !== 'undefined' ? _R : require('../index.js'));
-
-    p.map(function (e) {
-        return 'it(\'' + (e[1] ? 'accepts' : 'rejects') + ' ' + (typeof e[0] === 'object' && e[0] ? e[0].toSource() : JSON.stringify(e[0])) + ' as argument name\', function(){ expect(_R.isValidVariableName(' + (typeof e[0] === 'object' && e[0] ? e[0].toSource() : JSON.stringify(e[0])) + ')).toBe(' + e[1] + ');});';
-    }).join('\n')
 
 }
 
