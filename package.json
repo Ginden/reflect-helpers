@@ -1,6 +1,6 @@
 {
   "name": "reflect-r",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "_R is a powerful reflection library with support for lamba-lifting, modyfing code flow in fly and timing functions.",
   "main": "reflect-helpers.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Ginden/reflect-helpers.git"
+    "url": "git+https://github.com/Ginden/reflect-helpers.git"
   },
   "keywords": [
     "reflection",
@@ -22,5 +22,14 @@
   "bugs": {
     "url": "https://github.com/Ginden/reflect-helpers/issues"
   },
-  "homepage": "https://github.com/Ginden/reflect-helpers"
+  "homepage": "https://github.com/Ginden/reflect-helpers",
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.2.0",
+    "gulp-jasmine": "^2.0.1"
+  },
+  "directories": {
+    "test": "tests"
+  }
 }
