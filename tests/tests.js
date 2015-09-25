@@ -121,34 +121,6 @@ function ignore() {
 
         })();
 
-        (function () {
-            console.log('\n\tTesting _R.makeGeneric \n');
-            var func = _R.makeGeneric([].slice);
-            expect(JSON.stringify(func('abcd')))
-                .toEqual(JSON.stringify('abcd'.split('')))
-                .setTestName('Checking _R.makeGeneric - Array.prototype.slice applied to string. ')
-                .run()
-                .end();
-
-            var func = _R.makeGeneric(Object.prototype.toString);
-            expect(func('xd'))
-                .toEqual(({}).toString.call('xd'))
-                .setTestName('Checking _R.makeGeneric - Object.prototype.toString. ')
-                .run()
-                .end();
-
-
-            var func = _R.makeGeneric([].every);
-            expect(func('foobar', function (el) {
-                return !!el.charCodeAt(0)
-            }))
-                .toEqual(true)
-                .setTestName('Checking _R.makeGeneric - Array.prototype.every. ')
-                .run()
-                .end();
-
-
-        })();
 
 
 
