@@ -68,6 +68,20 @@ Browsers:
 ```html
 <script src="./reflect-helpers.js"></script>
 ```
+### Running tests
+
+```
+gulp test
+```
+
+### Building project
+
+```
+gulp build
+```
+
+
+
 
 ### Compatibility, requirements
 
@@ -113,7 +127,7 @@ _R.$setDirective(directive)
 
 Changes directive placed in every function.
 
-#### Avaible directives
+#### Available directives
 
 ```
 _R.DIRECTIVE_NORMAL // ''; is placed before every new function
@@ -403,8 +417,4 @@ _R.addMagicLengthProperty(what [,readOnly=true]);
 Adds magic `length` property to `what` object. It works almost as `length` property of arrays but it does not support length exceeding maximal index. 
 
 If `readOnly` argument is false, changes in `length` property will remove indexes over specified length.
-
-If `readOnly` arguments is false, `_R.addMagicLengthProperty` cannot be safely used with prototypes.
-
-
 
