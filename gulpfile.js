@@ -2,6 +2,7 @@ var gulp = require("gulp");
 var babel = require("gulp-babel");
 var jasmine = require('gulp-jasmine');
 var istanbul = require('gulp-istanbul');
+var toc    = require('gulp-doctoc');
 
 gulp.task('transpile', function () {
     return gulp.src(['lib/*.js', 'lib/*.js'])
@@ -24,6 +25,15 @@ gulp.task('test', ['test:build'], function () {
     .on('end', console.log)
         ;
 });
+
+gulp.task('markdown', function(){
+
+    gulp.src('*.md')
+        .pipe(toc())
+        .pipe(gulp.dest('.'));
+
+});
+
 
 gulp.task('build', ['transpile']);
 gulp.task('publish', ['test', 'build']);

@@ -2,15 +2,17 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
-- [_R](#_r)
+- [_R](#_r)
   - [Installation](#installation)
+    - [Running tests](#running-tests)
+    - [Building project](#building-project)
     - [Compatibility, requirements](#compatibility-requirements)
       - [Required functions (some functions can not work without them)](#required-functions-some-functions-can-not-work-without-them)
     - [Recommended functions (some functions can work incorrectly without them)](#recommended-functions-some-functions-can-work-incorrectly-without-them)
     - [Tested environments](#tested-environments)
     - [Test coverage](#test-coverage)
   - [_R settings](#_r-settings)
-      - [Avaible directives](#avaible-directives)
+      - [Available directives](#available-directives)
     - [Implementation dependant](#implementation-dependant)
   - [_R methods](#_r-methods)
     - [Checks and tests](#checks-and-tests)
@@ -23,7 +25,6 @@
       - [getPrototypesChain](#getprototypeschain)
     - [Modify functions](#modify-functions)
       - [declosureFunction](#declosurefunction)
-        - [transformer](#transformer)
       - [createNamedFunction](#createnamedfunction)
       - [createClosure](#createclosure)
     - [makeGeneric](#makegeneric)
