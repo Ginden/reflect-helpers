@@ -1,7 +1,3 @@
-/**
- * Created by michal.wadas on 2015-09-25.
- */
-
 var _R = typeof require === 'function' ? require('./lib/reflect-helpers.js') : (typeof window !== 'undefined' ? window._R : null);
 
 describe('_R.makeGeneric', function(){

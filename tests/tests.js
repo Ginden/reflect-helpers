@@ -114,15 +114,6 @@ function ignore() {
 
         })();
 
-        (function () {
-            console.log('\n\tTesting _R.toString \n');
-
-
-
-        })();
-
-
-
 
         if (errors.length) {
             console.error(errors)

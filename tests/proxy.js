@@ -1,7 +1,3 @@
-/**
- * Created by michal.wadas on 2015-08-11.
- */
-
 var _R = typeof require === 'function' ? require('./lib/reflect-helpers.js') : (typeof window !== 'undefined' ? window._R : null);
 
 
@@ -33,10 +29,6 @@ describe('_R.createProxy - ', function () {
             }
         };
         var k = new Circle(5);
-        console.log(k, Object.keys(k).map(
-            function(kk){
-                return [kk, ''+Object.getOwnPropertyDescriptor(k, kk).get]
-            }));
         expect(k.radius * 2)
             .toEqual(k.diameter);
 
@@ -57,6 +49,16 @@ describe('_R.createProxy - ', function () {
             .toEqual(k.diameter);
     });
 });
+
+
+
+
+
+
+
+
+
+
 
 
 
