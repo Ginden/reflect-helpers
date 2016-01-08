@@ -28,4 +28,17 @@ describe('_R.addMagicLengthProperty - ', function () {
         what.length = 0;
         expect(what.length).toEqual(0);
     });
+    it('Checks usage of array methods', function(){
+        function F() {
+        }
+        function sum(a,b) {
+            return a+b;
+        }
+        F.prototype = _R.addMagicLengthProperty({});
+        var t = new F;
+        [].push.call(t, 1, 2, 3, 4, 5);
+        expect([].reduce.call(t, sum))
+            .toEqual(15);
+
+    })
 });
