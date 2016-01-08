@@ -106,18 +106,10 @@ These enviroments pass automatic tests.
 See section 'Implementation dependant' for futher information.
 
 ### Test coverage
-Automatic tests exist for:
-* `_R.isValidVariableName`
-* `_R.isBoundOrNativeFunction`
-* `_R.getFunctionSourceCode`
-* `_R.getInternalClass`
-* `_R.indirectEval`
-* `_R.Proxy`
-* `_R.wrapFunction`
-* `_R.addMagicLengthProperty`
-* `_R.getPrototypeOf`
-* `_R.makeGeneric`
-It\'s 79.82% test coverage (istanbul report). 
+* Statements   : 91.1% (215/236)
+* Branches     : 70.41% (69/98)
+* Functions    : 88.68% (47/53)
+* Lines        : 90.99% (212/233)
 
 ## _R settings
 

@@ -53,26 +53,3 @@ describe('_R.getFunctionSourceCode', function () {
     });
 });
 
-describe('_R.wrapFunction', function () {
-
-    it('modyfies arguments by beforeTransformer', function () {
-        var t = _R.wrapFunction(function () {
-            return [].reduce.call(arguments, function (a, b) {
-                return a + b
-            });
-        }, function () {
-            return [100, 200, 300];
-        });
-        expect(t(1, 1)).toBe(600);
-    });
-    it('modifies result using afterTransformer', function () {
-        var t = _R.wrapFunction(function () {
-            return 1;
-        }, function () {
-        }, function () {
-            return 2;
-        });
-        expect(t(1,2,3,4,5,6)).toBe(2);
-    });
-});
-

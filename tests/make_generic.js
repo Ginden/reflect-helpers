@@ -14,3 +14,16 @@ describe('_R.makeGeneric', function(){
 
 
 });
+
+describe('_R.makeMethod', function(){
+    function createProperty(what) {
+        what[Math.random()] = null;
+    }
+    it('Checks simple function', function(){
+        var what = Object.create(null);
+        what.createProperty = _R.makeMethod(createProperty);
+        what.createProperty();
+        expect(Object.keys(what).length).toEqual(2);
+    });
+
+});
