@@ -2,7 +2,8 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
-- [_R](#_r)
+- [_R
+](#_r)
   - [Installation](#installation)
     - [Running tests](#running-tests)
     - [Building project](#building-project)
@@ -86,26 +87,6 @@ gulp build
 
 ### Compatibility, requirements
 
-_R requires following ES5/ES6 features:
-
-#### Required functions (some functions can not work without them)
-* Object.defineProperty
-* Object.getOwnPropertyDescriptor
-* JSON.stringify (can be polyfilled)
-
-### Recommended functions (some functions can work incorrectly without them)
-* Object.getPrototypeOf
-* Object.getOwnPropertyNames
-
-### Tested environments
-
-These enviroments pass automatic tests.
-* Node 0.8.14
-* Firefox 33
-* Chrome 36
-
-See section 'Implementation dependant' for futher information.
-
 ### Test coverage
 * Statements   : 91.1% (215/236)
 * Branches     : 70.41% (69/98)
@@ -131,8 +112,6 @@ _R.DIRECTIVE_ASM    // 'use asm'; is placed before every new function
 ### Implementation dependant
 * `_R.isValidVariableName` tests variable name against **current implementation** rules. 
 * `_R.isBoundOrNativeFunction` is slow in V8 (due to V8's incompatibility with ES6 spec).
-* `_R.getObjectPrototype` can fail in IE8 and lower. Internally it prefers `Object.getPrototypeOf` over `.__proto__` over `.constructor.prototype`.
-
 
 ## _R methods
 
@@ -183,7 +162,6 @@ _R.getPrototypesChain(what)
 ```
 If `what` is an object, returns array containing `what` and objects in it's prototype chain (array ends with `null`).
 Otherwise, return `[what, null]`.
-When cyclical reference is detected (possible in IE8 and lower), function returns with current prototypes list.
 
 ### Modify functions
 
@@ -241,49 +219,6 @@ Changes method to function accepting `this` as first argument.
 ```javascript
 var slice = _R.makeGeneric([].slice);
 slice(arguments, 2, 7);
-```
-
-### wrapFunction
-```javascript
-_R.wrapFunction(func, before, after, [dataObject])
-```
-Returns new function. New function pseudocode:
-```javascript
-function newFunc() {
-var error = null;
-var data = null;
-var newArgs = before(func, this, arguments, dataObject) || arguments;
-try {
-data = func.applyOrConstruct(this, newArgs);
-} catch(e){
-error = e;
-}
-var afterResult = after(func, this, error, data, newArgs, dataObject);
-data = afterResult || data;
-return data;
-}
-```
-#### before
-```
-function before(func, thisArg, funcArguments, dataObject) {}
-````
-`before` function can return array or modify `funcArguments` object. It will be used by wraped function.
-#### after
-```
-function after(func, thisArg, funcError, funcResult, funcArguments, dataObject) {}
-```
-
-#### Usage example
-```javascript
-$ = jQuery = _R.wrapFunction(
-	jQuery,
-	function($,ignored1,ignored2,ignored3, data){
-		data.startTime = Date.now();
-	},
-	function($,ignored1,ignored2,ignored3, data) {
-		console.log('jQuery function took '+(Date.now() - data.startTime)+' miliseconds to run.');
-	},
-	{})
 ```
 
 ## Utility
